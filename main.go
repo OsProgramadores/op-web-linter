@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -25,6 +26,11 @@ type LintNotice struct {
 	Column  int    `json:"column"`  // Column of the notice (not all linters support this).
 	Type    string `json:"type"`    // Type: "error", "warning", "note", "other"
 	Message string `json:"message"` // The linter message.
+}
+
+// GetLangResponse contains the response to /getlanguages.
+type GetLangResponse struct {
+	Languages []string `json:"Languages"` // JSON array with the list of languages.
 }
 
 // LintResponse contains a response to a lint request.
@@ -58,11 +64,21 @@ func linterForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func main() {
-	http.HandleFunc("/op-web-linter", linterForm)           // linter input route
-	http.HandleFunc("/op-web-linter/result", linterResults) // linter results route
+func getLanguages(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Returning list of languages to %v", r.RemoteAddr)
+	ret, err := json.Marshal(GetLangResponse{Languages: SupportedLangs})
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Internal error: %v", err), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("content-type", "application/json")
+	w.Write([]byte(ret))
+}
 
-	err := http.ListenAndServe(":9090", nil) // setting listening port
+func main() {
+	http.HandleFunc("/getlanguages", getLanguages) // Send languages back to caller.
+
+	err := http.ListenAndServe(":10000", nil) // setting listening port
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
