@@ -8,6 +8,32 @@ import (
 	"strings"
 )
 
+// SupportedLangs contains the supported linter languages.
+var SupportedLangs = []string{
+	"c", "cpp", "csharp", "java", "javascript", "go", "php", "python",
+}
+
+// LintRequest contains a request to lint a source program.
+type LintRequest struct {
+	Text []byte `json:"text"` // Text of the program.
+	Lang string `json:"lang"` // Language (must be in SupportedLangs)
+}
+
+// LintNotice contains a linter "notice" (error, warning, note, etc)
+type LintNotice struct {
+	Line    int    `json:"line"`    // Line of the notice
+	Column  int    `json:"column"`  // Column of the notice (not all linters support this).
+	Type    string `json:"type"`    // Type: "error", "warning", "note", "other"
+	Message string `json:"message"` // The linter message.
+}
+
+// LintResponse contains a response to a lint request.
+type LintResponse struct {
+	Pass         boolean      // Pass or not?
+	ErrorMessage string       // Used to send global linter failures back (usually blank).
+	Notices      []LintNotice // Linter messages
+}
+
 func linterResults(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm() //Parse url parameters passed, then parse the response packet for the POST body (request body)
 	// attention: If you do not call ParseForm method, the following data can not be obtained form
