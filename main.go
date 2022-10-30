@@ -29,7 +29,7 @@ type LintNotice struct {
 
 // LintResponse contains a response to a lint request.
 type LintResponse struct {
-	Pass         boolean      // Pass or not?
+	Pass         bool         // Pass or not?
 	ErrorMessage string       // Used to send global linter failures back (usually blank).
 	Notices      []LintNotice // Linter messages
 }
