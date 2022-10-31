@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"html/template"
 	"log"
@@ -76,9 +77,15 @@ func getLanguages(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/getlanguages", getLanguages) // Send languages back to caller.
+	var (
+		port = flag.Int("port", 10000, "Specify the TCP port to listen to")
+	)
 
-	err := http.ListenAndServe(":10000", nil) // setting listening port
+	http.HandleFunc("/getlanguages", getLanguages) // Send list of languages back to caller.
+
+	log.Printf("Listening on port %d", *port)
+
+	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
