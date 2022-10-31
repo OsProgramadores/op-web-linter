@@ -5,7 +5,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -24,7 +23,7 @@ func getLanguagesHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Returning list of languages to %v", r.RemoteAddr)
 	ret, err := json.Marshal(GetLangResponse{Languages: SupportedLangs})
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Internal error: %v", err), http.StatusInternalServerError)
+		httpError(w, err, http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("content-type", "application/json")

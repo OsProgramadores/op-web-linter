@@ -4,7 +4,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -19,7 +21,7 @@ type LintNotice struct {
 
 // LintRequest contains a request to lint a source program.
 type LintRequest struct {
-	Text []byte `json:"text"` // Text of the program.
+	Text string `json:"text"` // Text of the program.
 	Lang string `json:"lang"` // Language (must be in SupportedLangs)
 }
 
@@ -30,16 +32,45 @@ type LintResponse struct {
 	Notices      []LintNotice // Linter messages
 }
 
+// lintRequestHandler handles /linterrequest. The entire JSON request needs
+// to be posted as field "request" in the form.
 func lintRequestHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm() //Parse url parameters passed, then parse the response packet for the POST body (request body)
-	// attention: If you do not call ParseForm method, the following data can not be obtained form
-	fmt.Println(r.Form) // print information on server side.
-	fmt.Println("path", r.URL.Path)
-	fmt.Println("scheme", r.URL.Scheme)
-	fmt.Println(r.Form["url_long"])
-	for k, v := range r.Form {
-		fmt.Println("key:", k)
-		fmt.Println("val:", strings.Join(v, ""))
+	var req LintRequest
+
+	log.Printf("Serving request from: %v", r.RemoteAddr)
+
+	// Only POST request.
+	if r.Method != "POST" {
+		httpError(w, fmt.Errorf("Only POST requested accepted"), http.StatusMethodNotAllowed)
+		return
 	}
-	fmt.Fprintf(w, "Erros do linter serão exibidos aqui") // write data to response
+
+	// Content-type must be json.
+	if !strings.Contains(r.Header.Get("content-type"), "application/json") {
+		httpError(w, fmt.Errorf("Incorrect content-type. Expected: application/json"), http.StatusUnsupportedMediaType)
+		return
+	}
+
+	d := json.NewDecoder(r.Body)
+	d.Decode(&req)
+	log.Printf("Received form data: %+v", req)
+
+	// Program text must not be null.
+	if len(req.Text) == 0 {
+		httpError(w, fmt.Errorf("Program text cannot be empty"), http.StatusBadRequest)
+		return
+	}
+
+	// Validate as JSON.
+	jreq, err := json.Marshal(req)
+	if err != nil {
+		httpError(w, fmt.Errorf("Invalid json: %v", err), http.StatusBadRequest)
+		return
+	}
+	log.Printf("Parsed JSON: %v\n", string(jreq))
+
+	// TODO: Test valid languages.
+	// TODO: Run actual linters, parse and return results.
+
+	return
 }

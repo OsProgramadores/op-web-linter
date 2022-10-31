@@ -27,6 +27,7 @@ func main() {
 	)
 
 	http.HandleFunc("/getlanguages", getLanguagesHandler) // Send list of languages back to caller.
+	http.HandleFunc("/lint", lintRequestHandler)          // Linter request.
 
 	log.Printf("Listening on port %d", *port)
 
