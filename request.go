@@ -32,7 +32,7 @@ type LintResponse struct {
 	Notices      []LintNotice // Linter messages
 }
 
-// lintRequestHandler handles /linterrequest. The entire JSON request needs
+// lintRequestHandler handles /lint. The entire JSON request needs
 // to be posted as field "request" in the form.
 func lintRequestHandler(w http.ResponseWriter, r *http.Request) {
 	var req LintRequest
@@ -45,7 +45,7 @@ func lintRequestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Content-type must be json.
+	// Content-type must be application/json.
 	if !strings.Contains(r.Header.Get("content-type"), "application/json") {
 		httpError(w, fmt.Errorf("Incorrect content-type. Expected: application/json"), http.StatusUnsupportedMediaType)
 		return
