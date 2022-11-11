@@ -3,60 +3,36 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"os"
-	"os/exec"
-	"strings"
 )
 
 // runGolint runs golint on the source file and returns the output.
 func runGolint(fname string) ([]string, bool, error) {
 	// Golint to always exits with code 0 (no error). Any output
 	// means the input program contains errors.
-	ctx, cancel := context.WithTimeout(context.Background(), execTimeout)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, "golint", fname)
-	out, err := cmd.CombinedOutput()
+	out, err := execute("golint", fname)
 	if err != nil {
-		return []string{}, false, err
+		return out, false, err
 	}
 	// No errors in the program.
 	if len(out) == 0 {
 		return []string{}, true, nil
 	}
-	var ret []string
-	for _, line := range strings.Split(string(out), "\n") {
-		if line != "" {
-			ret = append(ret, line)
-		}
-	}
-	return ret, false, nil
+	return out, false, nil
 }
 
 // runGoBuild runs "go build" on the source file and returns the output.
 func runGoBuild(fname string) ([]string, bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), execTimeout)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, "go", "build", fname)
-	out, err := cmd.CombinedOutput()
-
+	out, err := execute("go", "build", fname)
 	retcode := exitcode(err)
 
+	// No errors.
 	if retcode == 0 {
 		return []string{}, true
 	}
-
-	var ret []string
-	for _, line := range strings.Split(string(out), "\n") {
-		if line != "" {
-			ret = append(ret, line)
-		}
-	}
-	return ret, false
+	return out, false
 }
 
 // lintGo is a test linter for a fake "test" language.

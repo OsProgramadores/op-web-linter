@@ -4,12 +4,15 @@
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -90,4 +93,23 @@ func saveProgramToFile(req LintRequest) (string, string, error) {
 		return "", "", err
 	}
 	return tempdir, tempfd.Name(), nil
+}
+
+// execute runs the program specified by name with the command-line specified
+// in slice args. Returns the error code and a string slice containing all
+// non-blank lines in the program's combined output.
+func execute(name string, args ...string) ([]string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), execTimeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, name, args...)
+	out, err := cmd.CombinedOutput()
+
+	var ret []string
+	for _, line := range strings.Split(string(out), "\n") {
+		if line != "" {
+			ret = append(ret, line)
+		}
+	}
+	return ret, err
 }
