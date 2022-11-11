@@ -11,14 +11,6 @@ import (
 	"strings"
 )
 
-// LintNotice contains a linter "notice" (error, warning, note, etc)
-type LintNotice struct {
-	Line    int    `json:"line"`    // Line of the notice
-	Column  int    `json:"column"`  // Column of the notice (not all linters support this).
-	Type    string `json:"type"`    // Type: "error", "warning", "note", "other"
-	Message string `json:"message"` // The linter message.
-}
-
 // LintRequest contains a request to lint a source program.
 type LintRequest struct {
 	Text string `json:"text"` // Text of the program.
@@ -27,9 +19,8 @@ type LintRequest struct {
 
 // LintResponse contains a response to a lint request.
 type LintResponse struct {
-	Pass         bool         // Pass or not?
-	ErrorMessage string       // Used to send global linter failures back (usually blank).
-	Notices      []LintNotice // Linter messages
+	Pass          bool     // Pass or not?
+	ErrorMessages []string // Used to send global linter failures back (usually blank).
 }
 
 // lintRequestHandler handles /lint. The entire JSON request needs

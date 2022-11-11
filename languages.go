@@ -4,13 +4,11 @@
 package main
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"sort"
 	"time"
 )
@@ -92,41 +90,4 @@ func saveProgramToFile(req LintRequest) (string, string, error) {
 		return "", "", err
 	}
 	return tempdir, tempfd.Name(), nil
-}
-
-// lintGo is a test linter for a fake "test" language.
-func lintGo(w http.ResponseWriter, r *http.Request, req LintRequest) {
-	tempdir, tempfile, err := saveProgramToFile(req)
-	if err != nil {
-		httpError(w, err, http.StatusInternalServerError)
-		return
-	}
-	defer os.RemoveAll(tempdir)
-
-	log.Println(req.Text)
-
-	// Golint to always exits with code 0 (no error). Any output
-	// means the input program contains errors.
-	ctx, cancel := context.WithTimeout(context.Background(), execTimeout)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, "golint", tempfile)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		httpError(w, err, http.StatusInternalServerError)
-		return
-	}
-
-	// Create response, convert to JSON and return.
-	resp := LintResponse{
-		Pass:         len(out) == 0,
-		ErrorMessage: string(out),
-	}
-	jresp, err := json.Marshal(resp)
-	if err != nil {
-		httpError(w, err, http.StatusInternalServerError)
-		return
-	}
-	w.Write(jresp)
-	w.Write([]byte("\n"))
 }
