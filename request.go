@@ -69,8 +69,13 @@ func lintRequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Parsed JSON: %v\n", string(jreq))
 
-	// TODO: Test valid languages.
-	// TODO: Run actual linters, parse and return results.
+	// Test valid languages.
+	if !validLang(req.Lang) {
+		httpError(w, fmt.Errorf("Invalid Language"), http.StatusBadRequest)
+		return
+	}
 
+	// Call the appropriate linter.
+	SupportedLangs[req.Lang](w, r, req)
 	return
 }
