@@ -5,6 +5,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -80,7 +81,13 @@ func saveProgramToFile(req LintRequest) (string, string, error) {
 	defer tempfd.Close()
 
 	// Save program text in request to file.
-	if _, err = tempfd.Write([]byte(req.Text)); err != nil {
+	program, err := base64.StdEncoding.DecodeString(req.Text)
+	if err != nil {
+		return "", "", err
+	}
+
+	log.Printf("Decoded program: %s\n", program)
+	if _, err = tempfd.Write([]byte(program)); err != nil {
 		os.RemoveAll(tempdir)
 		return "", "", err
 	}
@@ -121,4 +128,5 @@ func lintGo(w http.ResponseWriter, r *http.Request, req LintRequest) {
 		return
 	}
 	w.Write(jresp)
+	w.Write([]byte("\n"))
 }
