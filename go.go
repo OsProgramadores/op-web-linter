@@ -36,6 +36,29 @@ func runGolint(fname string) ([]string, bool, error) {
 	return ret, false, nil
 }
 
+// runGoBuild runs "go build" on the source file and returns the output.
+func runGoBuild(fname string) ([]string, bool) {
+	ctx, cancel := context.WithTimeout(context.Background(), execTimeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(ctx, "go", "build", fname)
+	out, err := cmd.CombinedOutput()
+
+	retcode := exitcode(err)
+
+	if retcode == 0 {
+		return []string{}, true
+	}
+
+	var ret []string
+	for _, line := range strings.Split(string(out), "\n") {
+		if line != "" {
+			ret = append(ret, line)
+		}
+	}
+	return ret, false
+}
+
 // lintGo is a test linter for a fake "test" language.
 func lintGo(w http.ResponseWriter, r *http.Request, req LintRequest) {
 	tempdir, tempfile, err := saveProgramToFile(req)
@@ -45,15 +68,27 @@ func lintGo(w http.ResponseWriter, r *http.Request, req LintRequest) {
 	}
 	defer os.RemoveAll(tempdir)
 
-	messages, ok, err := runGolint(tempfile)
+	var messages []string
+
+	// Golint.
+	m, ok, err := runGolint(tempfile)
 	if err != nil {
 		httpError(w, err, http.StatusInternalServerError)
 		return
 	}
+	if !ok {
+		messages = append(messages, m...)
+	}
+
+	// Go Build.
+	m, ok = runGoBuild(tempfile)
+	if !ok {
+		messages = append(messages, m...)
+	}
 
 	// Create response, convert to JSON and return.
 	resp := LintResponse{
-		Pass:          ok,
+		Pass:          len(messages) == 0,
 		ErrorMessages: messages,
 	}
 	jresp, err := json.Marshal(resp)
