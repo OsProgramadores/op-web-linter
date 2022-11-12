@@ -35,6 +35,19 @@ func runGoBuild(fname string) ([]string, bool) {
 	return out, false
 }
 
+// runGoFmt runs "go fmt -d" on the source file and indicates if any output
+// exists (this means the user needs to run gofmt on their source).
+func runGoFmt(fname string) ([]string, bool) {
+	out, err := execute("gofmt", fname)
+	retcode := exitcode(err)
+
+	// No errors.
+	if retcode != 0 || len(out) != 0 {
+		return []string{"Gofmt detected differences. Please run \"gofmt\" to fix this"}, len(out) == 0
+	}
+	return []string{""}, true
+}
+
 // lintGo is a test linter for a fake "test" language.
 func lintGo(w http.ResponseWriter, r *http.Request, req LintRequest) {
 	tempdir, tempfile, err := saveProgramToFile(req)
@@ -58,6 +71,12 @@ func lintGo(w http.ResponseWriter, r *http.Request, req LintRequest) {
 
 	// Go Build.
 	m, ok = runGoBuild(tempfile)
+	if !ok {
+		messages = append(messages, m...)
+	}
+
+	// Go fmt.
+	m, ok = runGoFmt(tempfile)
 	if !ok {
 		messages = append(messages, m...)
 	}
