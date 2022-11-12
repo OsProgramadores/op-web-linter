@@ -35,3 +35,12 @@ func exitcode(err error) int {
 	}
 	return retcode
 }
+
+// slicePrefix adds a prefix to every string line in the slice.
+func slicePrefix(slice []string, prefix string) []string {
+	var ret []string
+	for _, line := range slice {
+		ret = append(ret, fmt.Sprintf("[%s] %s", prefix, line))
+	}
+	return ret
+}

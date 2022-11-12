@@ -14,13 +14,13 @@ func runGolint(fname string) ([]string, bool, error) {
 	// means the input program contains errors.
 	out, err := execute("golint", fname)
 	if err != nil {
-		return out, false, err
+		return slicePrefix(out, "golint"), false, err
 	}
 	// No errors in the program.
 	if len(out) == 0 {
 		return []string{}, true, nil
 	}
-	return out, false, nil
+	return slicePrefix(out, "golint"), false, nil
 }
 
 // runGoBuild runs "go build" on the source file and returns the output.
@@ -32,7 +32,7 @@ func runGoBuild(fname string) ([]string, bool) {
 	if retcode == 0 {
 		return []string{}, true
 	}
-	return out, false
+	return slicePrefix(out, "go build"), false
 }
 
 // runGoFmt runs "go fmt -d" on the source file and indicates if any output
@@ -43,7 +43,8 @@ func runGoFmt(fname string) ([]string, bool) {
 
 	// No errors.
 	if retcode != 0 || len(out) != 0 {
-		return []string{"Gofmt detected differences. Please run \"gofmt\" to fix this"}, len(out) == 0
+		ret := []string{"Gofmt detected differences. Please run \"gofmt\" to fix this"}
+		return slicePrefix(ret, "gofmt"), len(out) == 0
 	}
 	return []string{""}, true
 }
