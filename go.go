@@ -38,7 +38,7 @@ func runGoBuild(fname string) ([]string, bool) {
 // runGoFmt runs "go fmt -d" on the source file and indicates if any output
 // exists (this means the user needs to run gofmt on their source).
 func runGoFmt(fname string) ([]string, bool) {
-	out, err := execute("gofmt", fname)
+	out, err := execute("gofmt", "-d", fname)
 	retcode := exitcode(err)
 
 	// No errors.
@@ -79,6 +79,11 @@ func lintGo(w http.ResponseWriter, r *http.Request, req LintRequest) {
 	m, ok = runGoFmt(tempfile)
 	if !ok {
 		messages = append(messages, m...)
+	}
+
+	// Return an empty JSON array if no messages
+	if len(messages) == 0 {
+		messages = []string{}
 	}
 
 	// Create response, convert to JSON and return.
