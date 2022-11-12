@@ -68,5 +68,4 @@ func lintRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Call the appropriate linter.
 	SupportedLangs[req.Lang](w, r, req)
-	return
 }

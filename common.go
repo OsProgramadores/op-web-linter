@@ -16,7 +16,6 @@ func httpError(w http.ResponseWriter, err error, httpcode int) {
 	m := fmt.Sprintf("Returned HTTP error %d: %v", httpcode, err)
 	log.Print(m)
 	http.Error(w, m, httpcode)
-	return
 }
 
 // exitcode fetches the numeric return code from the return of exec.Run.
