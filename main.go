@@ -10,6 +10,10 @@ import (
 	"net/http"
 )
 
+// BuildVersion Holds the current git HEAD version number.
+// This is filled in by the build process (make).
+var BuildVersion string
+
 func main() {
 	var (
 		port = flag.Int("port", 10000, "Specify the TCP port to listen to")
