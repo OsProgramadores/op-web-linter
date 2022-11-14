@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Online linter (op-desafios)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="col-md-10 col-lg-10">
+      <div class="pb-2 mt-4 mb-2 border-bottom">
+        <h1>Online Linter (op-desafios)</h1>
+      </div>
+
+      <form id="codeform">
+        <div class="form-group">
+          <label for="languageSelect">Selecione a Linguagem</label>
+          <select class="form-control" id="languageSelect">
+            {{range .Languages}}<option>{{.}}</option>{{end}}
+          </select>
+        </div>
+
+        <div class="form-group shadow-textarea">
+          <label for="codeText">Código</label>
+          <textarea class="form-control z-depth-1 text-monospace" id="codeText" rows="15"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" onclick="lint(); return false">Submit</button>
+        <!-- note: return false after the function call above is needed to avoid a refresh -->
+      </form>
+      <p>
+
+      <!-- results -->
+      <div class="alert alert-success" id="results_ok" style="display:none;"></div>
+      <div class="alert alert-danger" id="results_bad" style="display:none;"></div>
+    </div>
+  </div>
+
+  <script>
+    function lint() {
+      var xhttp = new XMLHttpRequest();
+      xhttp.open("POST", "{{.LintPath}}", true);
+
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            var res = JSON.parse(this.responseText);
+
+            if (res.Pass == true) {
+              eid = "results_ok";
+              msg = "No errors found!";
+            } else {
+              eid = "results_bad";
+              msg = res.ErrorMessages.join("<br>");
+            }
+          }
+          else {
+            eid = "results_bad";
+            msg = "Request failed: " + this.responseText;
+          }
+
+          document.getElementById("results_ok").style.display = "none";
+          document.getElementById("results_bad").style.display = "none";
+          document.getElementById(eid).style.display = "block";
+          document.getElementById(eid).innerHTML = msg;
+        }
+      };
+
+      // Send
+      const form = document.getElementById("codeform");
+      let programText64 = btoa(form.elements["codeText"].value);
+      let lang = form.elements["languageSelect"].value;
+      let req = JSON.stringify({"lang": lang, "text": programText64});
+      xhttp.setRequestHeader("Content-type", "application/json");
+      xhttp.send(req)
+    }
+  </script>
+</body>
+</html>

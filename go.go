@@ -24,8 +24,9 @@ func runGolint(fname string) ([]string, bool, error) {
 }
 
 // runGoBuild runs "go build" on the source file and returns the output.
-func runGoBuild(fname string) ([]string, bool) {
-	out, err := execute("go", "build", fname)
+func runGoBuild(dirname, fname string) ([]string, bool) {
+
+	out, err := execute("go", "build", "-o", dirname, fname)
 	retcode := exitcode(err)
 
 	// No errors.
@@ -53,7 +54,7 @@ func runGoFmt(fname string) ([]string, bool) {
 func lintGo(w http.ResponseWriter, r *http.Request, req LintRequest) {
 	tempdir, tempfile, err := saveProgramToFile(req)
 	if err != nil {
-		httpError(w, err, http.StatusInternalServerError)
+		httpError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer os.RemoveAll(tempdir)
@@ -63,7 +64,7 @@ func lintGo(w http.ResponseWriter, r *http.Request, req LintRequest) {
 	// Golint.
 	m, ok, err := runGolint(tempfile)
 	if err != nil {
-		httpError(w, err, http.StatusInternalServerError)
+		httpError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if !ok {
@@ -71,7 +72,7 @@ func lintGo(w http.ResponseWriter, r *http.Request, req LintRequest) {
 	}
 
 	// Go Build.
-	m, ok = runGoBuild(tempfile)
+	m, ok = runGoBuild(tempdir, tempfile)
 	if !ok {
 		messages = append(messages, m...)
 	}
@@ -94,7 +95,7 @@ func lintGo(w http.ResponseWriter, r *http.Request, req LintRequest) {
 	}
 	jresp, err := json.Marshal(resp)
 	if err != nil {
-		httpError(w, err, http.StatusInternalServerError)
+		httpError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Write(jresp)

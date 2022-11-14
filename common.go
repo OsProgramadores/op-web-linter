@@ -12,10 +12,10 @@ import (
 )
 
 // httpError logs the error and returns the appropriate message & http code.
-func httpError(w http.ResponseWriter, err error, httpcode int) {
-	m := fmt.Sprintf("Returned HTTP error %d: %v", httpcode, err)
+func httpError(w http.ResponseWriter, msg string, httpcode int) {
+	m := fmt.Sprintf("Returned HTTP error %d: %v", httpcode, msg)
 	log.Print(m)
-	http.Error(w, m, httpcode)
+	http.Error(w, msg, httpcode)
 }
 
 // exitcode fetches the numeric return code from the return of exec.Run.

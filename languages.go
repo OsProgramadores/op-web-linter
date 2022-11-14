@@ -37,9 +37,8 @@ type GetLangResponse struct {
 	Languages []string `json:"Languages"` // JSON array with the list of languages.
 }
 
-func getLanguagesHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Returning list of languages to %v", r.RemoteAddr)
-
+// getLanguagesList returns a string slice with all supported languages.
+func getLanguagesList() []string {
 	var langs []string
 	for lang, function := range SupportedLangs {
 		if function != nil {
@@ -47,10 +46,16 @@ func getLanguagesHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	sort.Strings(langs)
+	return langs
+}
+
+func getLanguagesHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Returning list of languages to %v", r.RemoteAddr)
+	langs := getLanguagesList()
 
 	ret, err := json.Marshal(GetLangResponse{Languages: langs})
 	if err != nil {
-		httpError(w, err, http.StatusInternalServerError)
+		httpError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("content-type", "application/json")

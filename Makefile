@@ -6,7 +6,7 @@
 BIN := op-web-linter
 BINDIR := /usr/local/bin
 ARCHDIR := arch
-SRC := $(wildcard *.go)
+SRC := $(wildcard *.go) frontend/form.tmpl
 GIT_TAG := $(shell git describe --always --tags)
 
 # Default target
