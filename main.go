@@ -13,7 +13,7 @@ import (
 )
 
 // URL path for static files.
-const staticURLPath = "/static"
+const staticURLPath = "/static/"
 
 // BuildVersion Holds the current git HEAD version number.
 // This is filled in by the build process (make).
@@ -45,9 +45,11 @@ func main() {
 	// Everything under staticURLPath is served as a regular file from rootdir.
 	// This allows us to keep local javascript files and other accessory files.
 	fs := http.FileServer(http.Dir(*staticdir))
-	http.Handle(staticURLPath, fs)
+	http.Handle(staticURLPath, http.StripPrefix(staticURLPath, fs))
 
-	log.Printf("Listening on http://%s:%d", *host, *port)
+	url := fmt.Sprintf("http://%s:%d", *host, *port)
+	log.Printf("Listening on %s", url)
+	log.Printf("Serving static files on %s", url+staticURLPath)
 
 	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
