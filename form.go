@@ -13,6 +13,7 @@ import (
 type frontend struct {
 	LintPath  string
 	Languages []string
+	StaticDir string
 	Template  *template.Template
 }
 
