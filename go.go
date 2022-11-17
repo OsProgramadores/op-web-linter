@@ -4,9 +4,16 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"regexp"
+	"strings"
 )
+
+// Regexp matching go build and go lint lines.
+var goLineRegex = regexp.MustCompile("^([^:]+):([0-9]+):([0-9]+):[ ]*(.*)")
 
 // runGolint runs golint on the source file and returns the output.
 func runGolint(fname string) ([]string, bool, error) {
@@ -14,18 +21,17 @@ func runGolint(fname string) ([]string, bool, error) {
 	// means the input program contains errors.
 	out, err := execute("golint", fname)
 	if err != nil {
-		return slicePrefix(out, "golint"), false, err
+		return slicePrefix(goErrorParse(out), "golint"), false, err
 	}
 	// No errors in the program.
 	if len(out) == 0 {
 		return []string{}, true, nil
 	}
-	return slicePrefix(out, "golint"), false, nil
+	return slicePrefix(goErrorParse(out), "golint"), false, nil
 }
 
 // runGoBuild runs "go build" on the source file and returns the output.
 func runGoBuild(dirname, fname string) ([]string, bool) {
-
 	out, err := execute("go", "build", "-o", dirname, fname)
 	retcode := exitcode(err)
 
@@ -33,7 +39,7 @@ func runGoBuild(dirname, fname string) ([]string, bool) {
 	if retcode == 0 {
 		return []string{}, true
 	}
-	return slicePrefix(out, "go build"), false
+	return slicePrefix(goErrorParse(out), "go build"), false
 }
 
 // runGoFmt runs "go fmt -d" on the source file and indicates if any output
@@ -48,6 +54,29 @@ func runGoFmt(fname string) ([]string, bool) {
 		return slicePrefix(ret, "gofmt"), len(out) == 0
 	}
 	return []string{""}, true
+}
+
+// goErrorParse remove undesirable lines and formats the output from go build.
+func goErrorParse(list []string) []string {
+	var ret []string
+	for _, v := range list {
+		// Go builds adds lines starting with #
+		if strings.HasPrefix(v, "#") {
+			continue
+		}
+		// Go build and go lint prefix lines with filename:line:column. Remove
+		// the filename since it's a temp file anyway.
+		g := goLineRegex.FindStringSubmatch(v)
+
+		// Unable to parse line. Include literally.
+		if g == nil || len(g) < 5 {
+			ret = append(ret, v)
+			continue
+		}
+
+		ret = append(ret, fmt.Sprintf("Line %s Col %s: %s", g[2], g[3], g[4]))
+	}
+	return ret
 }
 
 // lintGo is a test linter for a fake "test" language.
@@ -98,6 +127,7 @@ func lintGo(w http.ResponseWriter, r *http.Request, req LintRequest) {
 		httpError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	log.Printf("JSON response: %v", string(jresp))
 	w.Write(jresp)
 	w.Write([]byte("\n"))
 }
