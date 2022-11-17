@@ -16,7 +16,7 @@
       width: 80vw;
       height: 60vh;
       position: relative;
-      background-color: red;
+      background-color: #aaa;
   }
   #editor {
       font: 14px/normal 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', 'monospace';
@@ -29,7 +29,7 @@
 </style>
 <body>
   <div class="container">
-    <div class="col-md-10 col-lg-10">
+    <div class="col-md-10 col-lg-10 p-2">
       <div class="pb-2 mt-4 mb-2 border-bottom">
         <h1>Online Linter (op-desafios)</h1>
       </div>
@@ -42,18 +42,18 @@
           </select>
         </div>
 
-        <div id="editorContainer">
+        <div id="editorContainer" class="col-md-12 col-lg-12">
           <div id="editor"></div>
         </div>
 
-        <button type="submit" class="btn btn-primary" onclick="lint(); return false">Submit</button>
+        <button type="submit" class="btn btn-primary" style="margin-top:10px;" onclick="lint(); return false">Submit</button>
         <!-- note: return false after the function call above is needed to avoid a refresh -->
       </form>
       <p>
 
       <!-- results -->
-      <div class="alert alert-success" id="results_ok" style="display:none;"></div>
-      <div class="alert alert-danger" id="results_bad" style="display:none;"></div>
+      <div class="alert alert-success col-md-12 col-lg-12" id="results_ok" style="display:none;"></div>
+      <div class="alert alert-danger  col-md-12 col-lg-12" id="results_bad" style="display:none;"></div>
     </div>
   </div>
 
