@@ -19,7 +19,7 @@ const staticURLPath = "/static/"
 // This is filled in by the build process (make).
 var BuildVersion string
 
-//go:embed "frontend/form.tmpl"
+//go:embed "templates/form.tmpl"
 var tmpl string
 
 func main() {
