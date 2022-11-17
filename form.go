@@ -20,6 +20,8 @@ type frontend struct {
 func (x *frontend) formHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Serving root request from: %v", r.RemoteAddr)
 
+	log.Printf("FORM Request %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+
 	if err := x.Template.Execute(w, x); err != nil {
 		httpError(w, err.Error(), http.StatusInternalServerError)
 		return

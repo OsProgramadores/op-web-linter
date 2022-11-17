@@ -27,10 +27,10 @@ type LintResponse struct {
 func lintRequestHandler(w http.ResponseWriter, r *http.Request) {
 	var req LintRequest
 
+	log.Printf("LINT Request %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+
 	// Always set CORS.
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	log.Printf("Serving request from: %v", r.RemoteAddr)
 
 	// Set CORS header on preflight request (method == OPTIONS)
 	if r.Method == "OPTIONS" {
