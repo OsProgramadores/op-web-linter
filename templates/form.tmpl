@@ -96,7 +96,7 @@
       };
 
       // Send
-      let programText64 = btoa(editor.getValue());
+      let programText64 = encodeURIComponent(editor.getValue());
 
       const form = document.getElementById("codeform");
       let lang = form.elements["languageSelect"].value;

@@ -5,10 +5,10 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"sort"
@@ -87,7 +87,7 @@ func saveProgramToFile(req LintRequest) (string, string, error) {
 	defer tempfd.Close()
 
 	// Save program text in request to file.
-	program, err := base64.StdEncoding.DecodeString(req.Text)
+	program, err := url.QueryUnescape(req.Text)
 	if err != nil {
 		return "", "", err
 	}
