@@ -48,6 +48,8 @@ func main() {
 		log.Fatalf("Error parsing URL: %v", err)
 	}
 
+	staticpath := u.Path + staticURLPath
+
 	http.HandleFunc(u.Path+"/", fe.formHandler)                  // Serve form.
 	http.HandleFunc(u.Path+"/getlanguages", getLanguagesHandler) // Send list of languages back to caller.
 	http.HandleFunc(u.Path+"/lint", lintRequestHandler)          // Linter request.
@@ -55,11 +57,11 @@ func main() {
 	// Everything under staticURLPath is served as a regular file from rootdir.
 	// This allows us to keep local javascript files and other accessory files.
 	fs := http.FileServer(http.Dir(*staticdir))
-	http.Handle(staticURLPath, http.StripPrefix(staticURLPath, fs))
+	http.Handle(staticpath, http.StripPrefix(staticpath, fs))
 
 	log.Printf("Listening on port %d", *port)
 	log.Printf("URL for API requests: %s", *apiurl)
-	log.Printf("Serving static files on %s", *apiurl+staticURLPath)
+	log.Printf("Serving static files on path: %s", staticpath)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
