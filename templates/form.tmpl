@@ -20,8 +20,11 @@
 <body>
   <div class="container">
     <div class="row mb-3">
-      <div class="col-md-12 border-bottom">
+      <div class="col-md-11 border-bottom">
         <h1>Online Linter (op-desafios)</h1>
+      </div>
+      <div class="col-md-1 border-bottom">
+        <img src="static/settings.webp" class="img-fluid float-end" data-bs-toggle="modal" data-bs-target="#settingsModal" alt="setup" width="40" height="40">
       </div>
     </div>
 
@@ -60,6 +63,28 @@
     </div>
   </div>
 
+  <!-- Settings modal -->
+  <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="settingsModalLabel">Configurações</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Switches -->
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchInvisibleChars">
+              <label class="form-check-label" for="flexSwitchInvisibleChars">Mostra tabs e espaços</label>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
   <script>
     var editor = ace.edit("editor");
@@ -69,9 +94,13 @@
     editor.setOptions({
       printMargin: false
     });
-  </script>
 
-  <script>
+    // Settings: Show invisible characters on editor.
+    const settingsInvisibleChars = document.getElementById('flexSwitchInvisibleChars');
+    settingsInvisibleChars.onclick = () => {
+      editor.setOption('showInvisibles', settingsInvisibleChars.checked);
+    }
+
     function lint() {
       var xhttp = new XMLHttpRequest();
       xhttp.open("POST", "{{.LintPath}}", true);
