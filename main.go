@@ -33,7 +33,7 @@ func main() {
 	flag.Parse()
 
 	// Replace {port} with actual port.
-	*apiurl = strings.ReplaceAll(*apiurl, "{port}", fmt.Sprintf("%d", port))
+	*apiurl = strings.ReplaceAll(*apiurl, "{port}", fmt.Sprintf("%d", *port))
 
 	// All information required to serve the form.
 	fe := &frontend{
