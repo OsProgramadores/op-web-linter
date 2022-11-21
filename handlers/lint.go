@@ -1,6 +1,7 @@
+// Package handlers contains http handler code for op-web-linter.
+//
 // This file is part of op-web-linter.
 // See github.com/osprogramadores/op-web-linter for licensing and details.
-
 package handlers
 
 import (
@@ -8,6 +9,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/osprogramadores/op-web-linter/common"
 )
 
 // LintRequest contains a request to lint a source program.
@@ -22,9 +25,9 @@ type LintResponse struct {
 	ErrorMessages []string // Used to send global linter failures back (usually blank).
 }
 
-// lintRequestHandler handles /lint. The entire JSON request needs
+// LintRequestHandler handles /lint. The entire JSON request needs
 // to be posted as field "request" in the form.
-func lintRequestHandler(w http.ResponseWriter, r *http.Request) {
+func LintRequestHandler(w http.ResponseWriter, r *http.Request, supported SupportedLangs) {
 	var req LintRequest
 
 	log.Printf("LINT Request %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
@@ -49,13 +52,13 @@ func lintRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Only POST request.
 	if r.Method != "POST" {
-		httpError(w, "Only POST requested accepted", http.StatusMethodNotAllowed)
+		common.HttpError(w, "Only POST requested accepted", http.StatusMethodNotAllowed)
 		return
 	}
 
 	// Content-type must be application/json.
 	if !strings.Contains(r.Header.Get("content-type"), "application/json") {
-		httpError(w, "Incorrect content-type. Expected: application/json", http.StatusUnsupportedMediaType)
+		common.HttpError(w, "Incorrect content-type. Expected: application/json", http.StatusUnsupportedMediaType)
 		return
 	}
 
@@ -65,24 +68,24 @@ func lintRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Program text must not be null.
 	if len(req.Text) == 0 {
-		httpError(w, "Program text cannot be empty", http.StatusBadRequest)
+		common.HttpError(w, "Program text cannot be empty", http.StatusBadRequest)
 		return
 	}
 
 	// Validate as JSON.
 	jreq, err := json.Marshal(req)
 	if err != nil {
-		httpError(w, err.Error(), http.StatusBadRequest)
+		common.HttpError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	log.Printf("Parsed JSON: %v\n", string(jreq))
 
 	// Test valid languages.
-	if !validLang(req.Lang) {
-		httpError(w, "Invalid Language", http.StatusBadRequest)
+	if !validLang(req.Lang, supported) {
+		common.HttpError(w, "Invalid Language", http.StatusBadRequest)
 		return
 	}
 
 	// Call the appropriate linter.
-	SupportedLangs[req.Lang](w, r, req)
+	supported[req.Lang](w, r, req)
 }

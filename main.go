@@ -13,7 +13,8 @@ import (
 	"strings"
 	"text/template"
 
-	_ "github.com/osprogramadores/op-web-linter/handlers"
+	"github.com/osprogramadores/op-web-linter/handlers"
+	"github.com/osprogramadores/op-web-linter/lang"
 )
 
 // URL path for static files.
@@ -23,14 +24,14 @@ const staticURLPath = "/static/"
 // This is filled in by the build process (make).
 var BuildVersion string
 
-// SupportedLangs contains the supported linter languages.
-var SupportedLangs = map[string]func(w http.ResponseWriter, r *http.Request, req handlers.LintRequest){
+// supported contains the supported linter languages.
+var supported = handlers.SupportedLangs{
 	"c":          nil,
 	"cpp":        nil,
 	"csharp":     nil,
 	"java":       nil,
 	"javascript": nil,
-	"go":         lintGo,
+	"go":         lang.LintGo,
 	"php":        nil,
 	"python":     nil,
 }
@@ -50,9 +51,9 @@ func main() {
 	*apiurl = strings.ReplaceAll(*apiurl, "{port}", fmt.Sprintf("%d", *port))
 
 	// All information required to serve the form.
-	fe := &handlers.frontend{
+	fe := &handlers.Frontend{
 		LintPath:  *apiurl + "/lint",
-		Languages: getLanguagesList(),
+		Languages: handlers.GetLanguagesList(supported),
 		StaticDir: *staticdir,
 		Template:  template.Must(template.New("form").Parse(tmpl)),
 	}
@@ -64,9 +65,18 @@ func main() {
 
 	staticpath := u.Path + staticURLPath
 
-	http.HandleFunc(u.Path+"/", fe.formHandler)                  // Serve form.
-	http.HandleFunc(u.Path+"/getlanguages", getLanguagesHandler) // Send list of languages back to caller.
-	http.HandleFunc(u.Path+"/lint", lintRequestHandler)          // Linter request.
+	// Main HTML form for interactive access.
+	http.HandleFunc(u.Path+"/", fe.FormHandler)
+
+	// Send list of languages back to caller.
+	http.HandleFunc(u.Path+"/getlanguages", func(w http.ResponseWriter, r *http.Request) {
+		handlers.GetLanguagesHandler(w, r, supported)
+	})
+
+	// Lint request.
+	http.HandleFunc(u.Path+"/lint", func(w http.ResponseWriter, r *http.Request) {
+		handlers.LintRequestHandler(w, r, supported)
+	})
 
 	// Everything under staticURLPath is served as a regular file from rootdir.
 	// This allows us to keep local javascript files and other accessory files.

@@ -6,7 +6,7 @@
 BIN := op-web-linter
 BINDIR := /usr/local/bin
 ARCHDIR := arch
-SRC := $(wildcard *.go) templates/form.tmpl
+SRC := $(wildcard *.go) $(wildcard common/*.go) $(wildcard handlers/*.go) $(wildcard lang/*.go) templates/form.tmpl
 GIT_TAG := $(shell git describe --always --tags)
 
 # Default target
