@@ -1,3 +1,5 @@
+[![Go Tests](https://github.com/OsProgramadores/op-web-linter/actions/workflows/build-lint-test.yaml/badge.svg)](https://github.com/OsProgramadores/op-web-linter/actions/workflows/build-lint-test.yaml)
+
 # op-web-linter
 
 Web based linter for users of [Op-Desafios](http://github.com/osprogramadores/op-desafios).
