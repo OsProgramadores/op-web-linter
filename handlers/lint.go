@@ -1,7 +1,7 @@
 // This file is part of op-web-linter.
 // See github.com/osprogramadores/op-web-linter for licensing and details.
 
-package main
+package handlers
 
 import (
 	"encoding/json"

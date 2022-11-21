@@ -12,6 +12,8 @@ import (
 	"net/url"
 	"strings"
 	"text/template"
+
+	_ "github.com/osprogramadores/op-web-linter/handlers"
 )
 
 // URL path for static files.
@@ -20,6 +22,18 @@ const staticURLPath = "/static/"
 // BuildVersion Holds the current git HEAD version number.
 // This is filled in by the build process (make).
 var BuildVersion string
+
+// SupportedLangs contains the supported linter languages.
+var SupportedLangs = map[string]func(w http.ResponseWriter, r *http.Request, req handlers.LintRequest){
+	"c":          nil,
+	"cpp":        nil,
+	"csharp":     nil,
+	"java":       nil,
+	"javascript": nil,
+	"go":         lintGo,
+	"php":        nil,
+	"python":     nil,
+}
 
 //go:embed "templates/form.tmpl"
 var tmpl string
@@ -36,7 +50,7 @@ func main() {
 	*apiurl = strings.ReplaceAll(*apiurl, "{port}", fmt.Sprintf("%d", *port))
 
 	// All information required to serve the form.
-	fe := &frontend{
+	fe := &handlers.frontend{
 		LintPath:  *apiurl + "/lint",
 		Languages: getLanguagesList(),
 		StaticDir: *staticdir,

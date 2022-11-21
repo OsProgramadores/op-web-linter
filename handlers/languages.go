@@ -1,7 +1,7 @@
 // This file is part of op-web-linter.
 // See github.com/osprogramadores/op-web-linter for licensing and details.
 
-package main
+package handlers
 
 import (
 	"context"
@@ -19,18 +19,6 @@ import (
 const (
 	execTimeout = time.Duration(5 * time.Second)
 )
-
-// SupportedLangs contains the supported linter languages.
-var SupportedLangs = map[string]func(w http.ResponseWriter, r *http.Request, req LintRequest){
-	"c":          nil,
-	"cpp":        nil,
-	"csharp":     nil,
-	"java":       nil,
-	"javascript": nil,
-	"go":         lintGo,
-	"php":        nil,
-	"python":     nil,
-}
 
 // GetLangResponse contains the response to /getlanguages.
 type GetLangResponse struct {
