@@ -17,6 +17,7 @@ clean:
 	rm -f "${BIN}"
 	rm -f "docs/${BIN}.1"
 	rm -rf "${ARCHDIR}"
+	docker builder prune -f
 
 install: ${BIN}
 	install -m 755 "${BIN}" "${BINDIR}"

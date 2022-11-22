@@ -3,27 +3,29 @@ FROM golang:1-alpine AS builder
 MAINTAINER Marco Paganini <paganini@paganini.net>
 
 ARG PROJECT=op-web-linter
-
-# Copy the repo contents into /tmp/build (inside the container)
-WORKDIR /tmp/build/src/$PROJECT
-COPY . .
+ARG BUILD_DIR=/tmp/build/src/$PROJECT
 
 # Fully static (as long we we don't need to link to C)
 ENV CGO_ENABLED 0
 ENV PATH="${PATH}:/usr/local/bin"
 
+WORKDIR $BUILD_DIR
+COPY . .
+
 RUN apk add --no-cache ca-certificates git make nodejs npm && \
-    export HOME="/build" && \
-    export GOPATH="${HOME}" && \
-    go mod download && \
+    export HOME="/tmp/build" && \
+    export GOPATH="/tmp/build" && \
     mkdir -p /usr/local/bin && \
-    make install && \
     go get golang.org/x/lint/golint && \
     go install golang.org/x/lint/golint && \
     cp "${GOPATH}/bin/golint" /usr/local/bin && \
     mkdir -p /tmp/build/nodejs && \
     cd /tmp/build/nodejs && \
     npm install --save-dev eslint-config-standard-with-typescript@23.0.0 eslint@8.24.0
+
+RUN cd "${BUILD_DIR}" && \
+    go mod download && \
+    make install
 
 # Default port.
 EXPOSE 10000
