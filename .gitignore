@@ -1,2 +1,7 @@
 op-web-linter
 arch/
+
+# NodeJS crap.
+node_modules/
+package.json
+package-lock.json

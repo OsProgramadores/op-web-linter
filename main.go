@@ -30,8 +30,8 @@ var supported = handlers.SupportedLangs{
 	"cpp":        nil,
 	"csharp":     nil,
 	"java":       nil,
-	"javascript": nil,
-	"go":         lang.LintGo,
+	"javascript": lang.LintJavascript,
+	"golang":     lang.LintGo,
 	"php":        nil,
 	"python":     nil,
 }
