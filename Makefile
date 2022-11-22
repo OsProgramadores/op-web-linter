@@ -1,7 +1,7 @@
 ## This file is part of op-web-linter.
 ## See github.com/osprogramadores/op-web-linter for licensing and details.
 
-.PHONY: arch clean install
+.PHONY: arch clean docker install
 
 BIN := op-web-linter
 BINDIR := /usr/local/bin
@@ -20,6 +20,9 @@ clean:
 
 install: ${BIN}
 	install -m 755 "${BIN}" "${BINDIR}"
+
+docker: ${BIN}
+	docker build -t "${BIN}:latest" .
 
 # Creates cross-compiled tarred versions (for releases).
 arch: Makefile ${SRC}
