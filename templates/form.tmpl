@@ -48,10 +48,18 @@
       </div>
     </div>
 
-    <div class="row mb-3">
-      <div class="col-md-12">
-        <button type="submit" class="btn btn-primary" style="margin-top:10px;" onclick="lint(); return false">Submit</button>
+    <!-- Submit button -->
+
+    <div class="row mb-3 align-items-center">
+      <div class="col-md-11">
+        <button type="submit" class="btn btn-primary" onclick="lint(); return false">Submit</button>
         <!-- note: return false after the function call above is needed to avoid a refresh -->
+      </div>
+      <div class="col-md-1 text-end">
+        <!-- Spinner -->
+        <div class="spinner-border" role="status" id="pleasewait" style="visibility:hidden;">
+          <span class="visually-hidden">Aguarde...</span>
+        </div>
       </div>
     </div>
 
@@ -121,6 +129,9 @@
       }
     }
 
+    // Spinner
+    const spinner = document.getElementById("pleasewait");
+
     // Set editor language based on language selected in form.
     const languageSet = document.getElementById("languageSelect");
     languageSet.onclick = () => {
@@ -130,10 +141,15 @@
     editor.getSession().setMode("ace/mode/" + languageSet.value);
 
     function lint() {
+      spinner.style.visibility = "visible";
+
       var xhttp = new XMLHttpRequest();
       xhttp.open("POST", "{{.LintPath}}", true);
 
       xhttp.onreadystatechange = function() {
+        // Spinner off
+        spinner.style.visibility = "hidden";
+
         if (this.readyState == 4) {
           if (this.status == 200) {
             var res = JSON.parse(this.responseText);
