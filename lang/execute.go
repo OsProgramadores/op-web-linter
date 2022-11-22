@@ -6,6 +6,7 @@ package lang
 
 import (
 	"context"
+	"log"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -23,11 +24,16 @@ func Execute(name string, args ...string) ([]string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), execTimeout)
 	defer cancel()
 
+	log.Printf("Executing %s %s", name, strings.Join(args, " "))
 	cmd := exec.CommandContext(ctx, name, args...)
 	out, err := cmd.CombinedOutput()
 
+	log.Printf("Command returned error code: %v", err)
+	log.Printf("Command output:")
+
 	var ret []string
 	for _, line := range strings.Split(string(out), "\n") {
+		log.Println(line)
 		if line != "" {
 			ret = append(ret, line)
 		}
