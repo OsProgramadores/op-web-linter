@@ -1,4 +1,4 @@
-// package lang defines all language specific components of op-web-linter.
+// Package lang defines all language specific components of op-web-linter.
 //
 // This file is part of op-web-linter.
 // See github.com/osprogramadores/op-web-linter for licensing and details.
@@ -77,7 +77,7 @@ func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 func runGolint(fname string) ([]string, bool, error) {
 	// Golint to always exits with code 0 (no error). Any output
 	// means the input program contains errors.
-	out, err := common.Execute("golint", fname)
+	out, err := Execute("golint", fname)
 	if err != nil {
 		return common.SlicePrefix(goErrorParse(out), "golint"), false, err
 	}
@@ -90,8 +90,8 @@ func runGolint(fname string) ([]string, bool, error) {
 
 // runGoBuild runs "go build" on the source file and returns the output.
 func runGoBuild(dirname, fname string) ([]string, bool) {
-	out, err := common.Execute("go", "build", "-o", dirname, fname)
-	retcode := common.Exitcode(err)
+	out, err := Execute("go", "build", "-o", dirname, fname)
+	retcode := Exitcode(err)
 
 	// No errors.
 	if retcode == 0 {
@@ -103,8 +103,8 @@ func runGoBuild(dirname, fname string) ([]string, bool) {
 // runGoFmt runs "go fmt -d" on the source file and indicates if any output
 // exists (this means the user needs to run gofmt on their source).
 func runGoFmt(fname string) ([]string, bool) {
-	out, err := common.Execute("gofmt", "-d", fname)
-	retcode := common.Exitcode(err)
+	out, err := Execute("gofmt", "-d", fname)
+	retcode := Exitcode(err)
 
 	// No errors.
 	if retcode != 0 || len(out) != 0 {
