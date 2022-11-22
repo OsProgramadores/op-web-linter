@@ -101,7 +101,6 @@
     var editor = ace.edit("editor");
     editor.getSession().setUseWorker(false);
     editor.setTheme("ace/theme/cloud9_day");
-    editor.getSession().setMode("ace/mode/golang");
     editor.setOptions({
       printMargin: false
     });
@@ -121,6 +120,14 @@
         editor.setTheme("ace/theme/cloud9_day");
       }
     }
+
+    // Set editor language based on language selected in form.
+    const languageSet = document.getElementById("languageSelect");
+    languageSet.onclick = () => {
+      editor.getSession().setMode("ace/mode/" + languageSet.value);
+    }
+    // Set initial value for the language.
+    editor.getSession().setMode("ace/mode/" + languageSet.value);
 
     function lint() {
       var xhttp = new XMLHttpRequest();
