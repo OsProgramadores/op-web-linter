@@ -32,7 +32,7 @@ func LintJavascript(w http.ResponseWriter, r *http.Request, req handlers.LintReq
 	var messages []string
 
 	// eslint.
-	messages, ok, err := runEslint(tempfile)
+	messages, ok, _ := runEslint(tempfile)
 
 	// Create response, convert to JSON and return.
 	resp := handlers.LintResponse{
