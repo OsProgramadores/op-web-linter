@@ -22,7 +22,7 @@ var goLineRegex = regexp.MustCompile("^([^:]+):([0-9]+):([0-9]+):[ ]*(.*)")
 
 // LintGo lints programs written in Go.
 func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
-	tempdir, tempfile, err := handlers.SaveProgramToFile(req)
+	tempdir, tempfile, err := handlers.SaveProgramToFile(req, "*.go")
 	if err != nil {
 		common.HttpError(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -124,15 +124,15 @@ func goErrorParse(list []string) []string {
 		}
 		// Go build and go lint prefix lines with filename:line:column. Remove
 		// the filename since it's a temp file anyway.
-		g := goLineRegex.FindStringSubmatch(v)
+		r := goLineRegex.FindStringSubmatch(v)
 
 		// Unable to parse line. Include literally.
-		if g == nil || len(g) < 5 {
+		if r == nil || len(r) < 5 {
 			ret = append(ret, v)
 			continue
 		}
 
-		ret = append(ret, fmt.Sprintf("Line %s Col %s: %s", g[2], g[3], g[4]))
+		ret = append(ret, fmt.Sprintf("Line %s Col %s: %s", r[2], r[3], r[4]))
 	}
 	return ret
 }

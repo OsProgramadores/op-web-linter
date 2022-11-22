@@ -39,13 +39,15 @@ func GetLanguagesHandler(w http.ResponseWriter, r *http.Request, supported Suppo
 
 // SaveProgramToFile saves the program in req.text into a temporary
 // file and returns the name of the temporary directory and file.
+// The template parameter specifies how the filename will appear.
+// Use "*.foo" to have a temporary filename with extension foo.
 // Callers must use defer os.Removeall(tempdir) in their functions.
-func SaveProgramToFile(req LintRequest) (string, string, error) {
+func SaveProgramToFile(req LintRequest, template string) (string, string, error) {
 	tempdir, err := os.MkdirTemp("", "")
 	if err != nil {
 		return "", "", err
 	}
-	tempfd, err := os.CreateTemp(tempdir, "*.go")
+	tempfd, err := os.CreateTemp(tempdir, template)
 	if err != nil {
 		os.RemoveAll(tempdir)
 		return "", "", err
