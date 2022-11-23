@@ -33,7 +33,7 @@ var supported = handlers.SupportedLangs{
 	"javascript": lang.LintJavascript,
 	"golang":     lang.LintGo,
 	"php":        nil,
-	"python":     nil,
+	"python":     lang.LintPython,
 }
 
 //go:embed "templates/form.tmpl"
