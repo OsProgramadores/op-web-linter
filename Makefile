@@ -22,7 +22,8 @@ clean:
 install: ${BIN}
 	install -m 755 "${BIN}" "${BINDIR}"
 
-docker: ${BIN}
+# Build the binary inside the container.
+docker: ${SRC}
 	docker build -t "${BIN}:latest" .
 
 # Creates cross-compiled tarred versions (for releases).
