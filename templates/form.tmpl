@@ -22,10 +22,10 @@
   <div class="container">
     <div class="title border-bottom mb-3 mt-3">
       <div class="row align-items-center">
-        <div class="col-md-11">
-          <h2>Online Linter (op-desafios)</h2>
+        <div class="col-10">
+          <h3><strong>Online Linter</strong></h3>
         </div>
-        <div class="col-md-1 text-end">
+        <div class="col-2 text-end">
           <span class="material-symbols-outlined text-end" data-bs-toggle="modal" data-bs-target="#settingsModal">
             settings
           </span>
@@ -51,11 +51,11 @@
     <!-- Submit button -->
 
     <div class="row mb-3 align-items-center">
-      <div class="col-md-11">
+      <div class="col-6">
         <button type="submit" class="btn btn-primary" onclick="lint(); return false">Submit</button>
         <!-- note: return false after the function call above is needed to avoid a refresh -->
       </div>
-      <div class="col-md-1 text-end">
+      <div class="col-6 text-end">
         <!-- Spinner -->
         <div class="spinner-border" role="status" id="pleasewait" style="visibility:hidden;">
           <span class="visually-hidden">Aguarde...</span>
