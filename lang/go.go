@@ -22,7 +22,7 @@ var goLineRegex = regexp.MustCompile("^([^:]+):([0-9]+):([0-9]+):[ ]*(.*)")
 
 // LintGo lints programs written in Go.
 func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
-	tempdir, tempfile, err := handlers.SaveProgramToFile(req, "*.go")
+	tempdir, tempfile, err := saveProgramToFile(req, "*.go")
 	if err != nil {
 		common.HttpError(w, err.Error(), http.StatusInternalServerError)
 		return

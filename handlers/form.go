@@ -22,8 +22,6 @@ type Frontend struct {
 
 // FormHandler serves the main form to the user.
 func (x *Frontend) FormHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Serving root request from: %v", r.RemoteAddr)
-
 	log.Printf("FORM Request %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
 
 	if err := x.Template.Execute(w, x); err != nil {

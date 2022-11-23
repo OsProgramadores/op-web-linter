@@ -28,25 +28,11 @@ type LintResponse struct {
 // LintRequestHandler handles /lint. The entire JSON request needs
 // to be posted as field "request" in the form.
 func LintRequestHandler(w http.ResponseWriter, r *http.Request, supported SupportedLangs) {
-	var req LintRequest
-
 	log.Printf("LINT Request %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
-
-	// Always set CORS.
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
-	// Set CORS header on preflight request (method == OPTIONS)
+	CORSHandler(w, r)
 	if r.Method == "OPTIONS" {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Method", "POST")
-		w.Header().Set("Access-Control-Allow-Headers", "*")
+		log.Printf("Got OPTIONS method. Returning.")
 		w.WriteHeader(http.StatusNoContent)
-		log.Printf("OPTIONS Response headers:")
-		for h := range w.Header() {
-			for _, v := range w.Header().Values(h) {
-				log.Printf("%s: %s", h, v)
-			}
-		}
 		return
 	}
 
@@ -62,6 +48,7 @@ func LintRequestHandler(w http.ResponseWriter, r *http.Request, supported Suppor
 		return
 	}
 
+	var req LintRequest
 	d := json.NewDecoder(r.Body)
 	d.Decode(&req)
 	log.Printf("Received form data: %+v", req)

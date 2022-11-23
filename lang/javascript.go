@@ -22,7 +22,7 @@ var eslintLineRegex = regexp.MustCompile("^[ \t]*([0-9]+):([0-9]+)[ ]*(.*)")
 
 // LintJavascript lints programs written in Javascript.
 func LintJavascript(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
-	tempdir, tempfile, err := handlers.SaveProgramToFile(req, "*.js")
+	tempdir, tempfile, err := saveProgramToFile(req, "*.js")
 	if err != nil {
 		common.HttpError(w, err.Error(), http.StatusInternalServerError)
 		return
