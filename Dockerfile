@@ -15,8 +15,8 @@ RUN apk add --no-cache ca-certificates git make nodejs npm python3 py3-pylint &&
     mkdir -p /usr/local/bin && \
     go install golang.org/x/lint/golint@latest && \
     cp "${GOPATH}/bin/golint" /usr/local/bin && \
-    mkdir -p /tmp/build/nodejs && \
-    cd /tmp/build/nodejs && \
+    mkdir -p "${BUILD_DIR}" && \
+    cd "${BUILD_DIR}" && \
     npm install --save-dev eslint-config-standard-with-typescript@23.0.0 eslint@8.24.0
 
 WORKDIR $BUILD_DIR
@@ -33,4 +33,3 @@ EXPOSE 10000
 # arguments after the docker run are appended to the ENTRYPOINT command line.
 USER ${UID}
 ENTRYPOINT ["/usr/local/bin/op-web-linter"]
-
