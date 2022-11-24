@@ -52,10 +52,11 @@ func main() {
 
 	// All information required to serve the form.
 	fe := &handlers.Frontend{
-		LintPath:  *apiurl + "/lint",
-		Languages: handlers.GetLanguagesList(supported),
-		StaticDir: *staticdir,
-		Template:  template.Must(template.New("form").Parse(tmpl)),
+		LintPath:   *apiurl + "/lint",
+		StaticPath: *apiurl + "/static",
+		Languages:  handlers.GetLanguagesList(supported),
+		StaticDir:  *staticdir,
+		Template:   template.Must(template.New("form").Parse(tmpl)),
 	}
 
 	u, err := url.Parse(*apiurl)
