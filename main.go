@@ -18,7 +18,7 @@ import (
 )
 
 // URL path for static files.
-const staticURLPath = "/static"
+const staticURLPath = "/static/"
 
 // BuildVersion Holds the current git HEAD version number.
 // This is filled in by the build process (make).
@@ -50,20 +50,20 @@ func main() {
 	// Replace {port} with actual port.
 	*apiurl = strings.ReplaceAll(*apiurl, "{port}", fmt.Sprintf("%d", *port))
 
+	// All information required to serve the form.
+	fe := &handlers.Frontend{
+		LintPath:  *apiurl + "/lint",
+		Languages: handlers.GetLanguagesList(supported),
+		StaticDir: *staticdir,
+		Template:  template.Must(template.New("form").Parse(tmpl)),
+	}
+
 	u, err := url.Parse(*apiurl)
 	if err != nil {
 		log.Fatalf("Error parsing URL: %v", err)
 	}
-	staticpath := u.Path + staticURLPath
 
-	// All information required to serve the form.
-	fe := &handlers.Frontend{
-		LintPath:   *apiurl + "/lint",
-		StaticPath: staticpath,
-		Languages:  handlers.GetLanguagesList(supported),
-		StaticDir:  *staticdir,
-		Template:   template.Must(template.New("form").Parse(tmpl)),
-	}
+	staticpath := u.Path + staticURLPath
 
 	// Main HTML form for interactive access.
 	http.HandleFunc(u.Path+"/", fe.FormHandler)
@@ -81,7 +81,7 @@ func main() {
 	// Everything under staticURLPath is served as a regular file from rootdir.
 	// This allows us to keep local javascript files and other accessory files.
 	fs := http.FileServer(http.Dir(*staticdir))
-	http.Handle(staticpath+"/", http.StripPrefix(staticpath+"/", fs))
+	http.Handle(staticpath, http.StripPrefix(staticpath, fs))
 
 	log.Printf("Listening on port %d", *port)
 	log.Printf("URL for API requests: %s", *apiurl)

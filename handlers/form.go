@@ -14,11 +14,10 @@ import (
 
 // Frontend holds the parameters passed to the frontend form.
 type Frontend struct {
-	LintPath   string
-	Languages  []string
-	StaticDir  string
-	StaticPath string
-	Template   *template.Template
+	LintPath  string
+	Languages []string
+	StaticDir string
+	Template  *template.Template
 }
 
 // FormHandler serves the main form to the user.
