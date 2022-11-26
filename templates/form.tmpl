@@ -157,6 +157,10 @@
         if (this.readyState == 4) {
           if (this.status == 200) {
             var res = JSON.parse(this.responseText);
+            // Update editor text if code reformatted.
+            if (res.Reformatted == true) {
+              editor.setValue(res.ReformattedText)
+            }
 
             if (res.Pass == true) {
               eid = "results_ok";

@@ -21,8 +21,10 @@ type LintRequest struct {
 
 // LintResponse contains a response to a lint request.
 type LintResponse struct {
-	Pass          bool     // Pass or not?
-	ErrorMessages []string // Used to send global linter failures back (usually blank).
+	Pass            bool     // Pass or not?
+	ErrorMessages   []string // Used to send global linter failures back (usually blank).
+	Reformatted     bool     // Was the program reformatted?
+	ReformattedText string   // Reformatted program code.
 }
 
 // LintRequestHandler handles /lint. The entire JSON request needs

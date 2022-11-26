@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -23,7 +24,15 @@ var pylintLineRegex = regexp.MustCompile("^[^:]+:([0-9]+):([0-9]+):[ ]*(.*)")
 
 // LintPython lints programs written in Python (v3).
 func LintPython(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
-	tempdir, tempfile, err := saveProgramToFile(req, "*.py")
+	original, err := url.QueryUnescape(req.Text)
+	if err != nil {
+		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Decoded program: %s\n", original)
+
+	tempdir, tempfile, err := saveProgramToFile(original, "*.py")
 	if err != nil {
 		common.HttpError(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -32,11 +41,10 @@ func LintPython(w http.ResponseWriter, r *http.Request, req handlers.LintRequest
 
 	// pylint.
 	out, err := Execute("pylint", "--rcfile=/tmp/build/src/op-web-linter/config/pylint3.rc", tempfile)
-	retcode := Exitcode(err)
 
 	// Create response, convert to JSON and return.
 	resp := handlers.LintResponse{
-		Pass:          retcode == 0,
+		Pass:          err == nil,
 		ErrorMessages: common.SlicePrefix(PythonErrorParse(out, tempfile), "pylint"),
 	}
 	jresp, err := json.Marshal(resp)
@@ -52,10 +60,14 @@ func LintPython(w http.ResponseWriter, r *http.Request, req handlers.LintRequest
 // PythonErrorParse remove undesirable messages from the pylint output.
 // pylint3 is very verbose. Limit output to the lines starting with our
 // filename.
-func PythonErrorParse(list []string, tempfile string) []string {
+func PythonErrorParse(output string, tempfile string) []string {
 	var ret []string
-	for _, v := range list {
+	for _, v := range strings.Split(output, "\n") {
 		if !strings.HasPrefix(v, tempfile) {
+			continue
+		}
+		// Remove blank lines.
+		if strings.TrimSpace(v) == "" {
 			continue
 		}
 		// Parse line:column message error lines.

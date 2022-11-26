@@ -1,4 +1,4 @@
-// Package lang defines all language specific components of op-web-linter.
+// Package lang defines all language speicfic components of op-web-linter.
 //
 // This file is part of op-web-linter.
 // See github.com/osprogramadores/op-web-linter for licensing and details.
@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -22,7 +23,15 @@ var goLineRegex = regexp.MustCompile("^([^:]+):([0-9]+):([0-9]+):[ ]*(.*)")
 
 // LintGo lints programs written in Go.
 func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
-	tempdir, tempfile, err := saveProgramToFile(req, "*.go")
+	original, err := url.QueryUnescape(req.Text)
+	if err != nil {
+		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Decoded program: %s\n", original)
+
+	// Save program text in request to file.
+	tempdir, tempfile, err := saveProgramToFile(original, "*.go")
 	if err != nil {
 		common.HttpError(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -30,6 +39,20 @@ func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	defer os.RemoveAll(tempdir)
 
 	var messages []string
+
+	// Attempt to reformat source with gofmt (+simplify).
+	// Indicate formatting failure if necessary.
+	reformatted, err := Execute("gofmt", "-s", tempfile)
+
+	if err != nil {
+		messages = append(messages, fmt.Sprintf("Reformat failed: %v", err))
+	} else {
+		// Rewrite reformatted program to tempfile.
+		if err := os.WriteFile(tempfile, []byte(reformatted), 0644); err != nil {
+			common.HttpError(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 
 	// Golint.
 	m, ok, err := runGolint(tempfile)
@@ -47,21 +70,12 @@ func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 		messages = append(messages, m...)
 	}
 
-	// Go fmt.
-	m, ok = runGoFmt(tempfile)
-	if !ok {
-		messages = append(messages, m...)
-	}
-
-	// Return an empty JSON array if no messages
-	if len(messages) == 0 {
-		messages = []string{}
-	}
-
 	// Create response, convert to JSON and return.
 	resp := handlers.LintResponse{
-		Pass:          len(messages) == 0,
-		ErrorMessages: messages,
+		Pass:            len(messages) == 0,
+		ErrorMessages:   messages,
+		Reformatted:     reformatted != original,
+		ReformattedText: reformatted,
 	}
 	jresp, err := json.Marshal(resp)
 	if err != nil {
@@ -77,7 +91,9 @@ func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 func runGolint(fname string) ([]string, bool, error) {
 	// Golint to always exits with code 0 (no error). Any output
 	// means the input program contains errors.
-	out, err := Execute("golint", fname)
+	o, err := Execute("golint", fname)
+	out := strings.Split(o, "\n")
+
 	if err != nil {
 		return common.SlicePrefix(goErrorParse(out), "golint"), false, err
 	}
@@ -90,7 +106,8 @@ func runGolint(fname string) ([]string, bool, error) {
 
 // runGoBuild runs "go build" on the source file and returns the output.
 func runGoBuild(dirname, fname string) ([]string, bool) {
-	out, err := Execute("go", "build", "-o", dirname, fname)
+	o, err := Execute("go", "build", "-o", dirname, fname)
+	out := strings.Split(o, "\n")
 	retcode := Exitcode(err)
 
 	// No errors.
@@ -100,26 +117,16 @@ func runGoBuild(dirname, fname string) ([]string, bool) {
 	return common.SlicePrefix(goErrorParse(out), "go build"), false
 }
 
-// runGoFmt runs "go fmt -d" on the source file and indicates if any output
-// exists (this means the user needs to run gofmt on their source).
-func runGoFmt(fname string) ([]string, bool) {
-	out, err := Execute("gofmt", "-d", fname)
-	retcode := Exitcode(err)
-
-	// No errors.
-	if retcode != 0 || len(out) != 0 {
-		ret := []string{"Gofmt detected differences. Please run \"gofmt\" to fix this"}
-		return common.SlicePrefix(ret, "gofmt"), len(out) == 0
-	}
-	return []string{""}, true
-}
-
 // goErrorParse remove undesirable lines and formats the output from go build.
 func goErrorParse(list []string) []string {
 	var ret []string
 	for _, v := range list {
 		// Go builds adds lines starting with #
 		if strings.HasPrefix(v, "#") {
+			continue
+		}
+		// Remove blank lines.
+		if strings.TrimSpace(v) == "" {
 			continue
 		}
 		// Go build and go lint prefix lines with filename:line:column. Remove

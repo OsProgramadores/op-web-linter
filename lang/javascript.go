@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -22,22 +23,28 @@ var eslintLineRegex = regexp.MustCompile("^[ \t]*([0-9]+):([0-9]+)[ ]*(.*)")
 
 // LintJavascript lints programs written in Javascript.
 func LintJavascript(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
-	tempdir, tempfile, err := saveProgramToFile(req, "*.js")
+	original, err := url.QueryUnescape(req.Text)
+	if err != nil {
+		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Decoded program: %s\n", original)
+
+	tempdir, tempfile, err := saveProgramToFile(original, "*.js")
 	if err != nil {
 		common.HttpError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer os.RemoveAll(tempdir)
 
-	var messages []string
-
 	// eslint.
-	messages, ok, _ := runEslint(tempfile)
+	o, err := Execute("npx", "eslint", "-c", "/tmp/build/src/op-web-linter/config/eslintrc.yaml", tempfile)
+	out := strings.Split(o, "\n")
 
 	// Create response, convert to JSON and return.
 	resp := handlers.LintResponse{
-		Pass:          ok,
-		ErrorMessages: messages,
+		Pass:          err == nil,
+		ErrorMessages: common.SlicePrefix(JavascriptErrorParse(out, tempfile), "eslint"),
 	}
 	jresp, err := json.Marshal(resp)
 	if err != nil {
@@ -49,26 +56,16 @@ func LintJavascript(w http.ResponseWriter, r *http.Request, req handlers.LintReq
 	w.Write([]byte("\n"))
 }
 
-// runEslint runs eslint on the source file and returns the output.
-func runEslint(fname string) ([]string, bool, error) {
-	cmd := `npx eslint -c /tmp/build/src/op-web-linter/config/eslintrc.yaml ` + fname
-	c := strings.Split(cmd, " ")
-	out, err := Execute(c[0], c[1:]...)
-	retcode := Exitcode(err)
-
-	// No errors.
-	if retcode == 0 {
-		return []string{}, true, nil
-	}
-	return common.SlicePrefix(JavascriptErrorParse(out, fname), "eslint"), false, err
-}
-
 // JavascriptErrorParse remove undesirable messages from the eslint output.
 func JavascriptErrorParse(list []string, tempfile string) []string {
 	var ret []string
 	for _, v := range list {
 		// eslint adds a line with the filename.
 		if strings.HasPrefix(v, tempfile) {
+			continue
+		}
+		// Remove blank lines.
+		if strings.TrimSpace(v) == "" {
 			continue
 		}
 		// Parse line:column message error lines.
