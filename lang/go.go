@@ -42,9 +42,9 @@ func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 
 	// Attempt to reformat source with gofmt (+simplify).
 	// Indicate formatting failure if necessary.
-	reformatted, err := Execute("gofmt", "-s", tempfile)
+	reformatted, gofmterr := Execute("gofmt", "-s", tempfile)
 
-	if err != nil {
+	if gofmterr != nil {
 		messages = append(messages, fmt.Sprintf("Reformat failed: %v", err))
 	} else {
 		// Rewrite reformatted program to tempfile.
@@ -74,7 +74,7 @@ func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	resp := handlers.LintResponse{
 		Pass:            len(messages) == 0,
 		ErrorMessages:   messages,
-		Reformatted:     reformatted != original,
+		Reformatted:     reformatted != original && gofmterr == nil,
 		ReformattedText: reformatted,
 	}
 	jresp, err := json.Marshal(resp)

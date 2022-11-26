@@ -26,7 +26,7 @@ var BuildVersion string
 
 // supported contains the supported linter languages.
 var supported = handlers.SupportedLangs{
-	"c":          nil,
+	"c":          lang.LintC,
 	"cpp":        nil,
 	"csharp":     nil,
 	"java":       nil,

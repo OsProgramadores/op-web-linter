@@ -9,7 +9,7 @@ ARG BUILD_DIR=/tmp/build/src/$PROJECT
 ENV CGO_ENABLED 0
 ENV PATH="${PATH}:/usr/local/bin"
 
-RUN apk add --no-cache ca-certificates git make nodejs npm python3 py3-pylint && \
+RUN apk add --no-cache ca-certificates git indent make nodejs npm python3 py3-pylint && \
     export HOME="/tmp/build" && \
     export GOPATH="/tmp/build" && \
     mkdir -p /usr/local/bin && \
