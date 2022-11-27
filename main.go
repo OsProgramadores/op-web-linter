@@ -54,7 +54,7 @@ func main() {
 	fe := &handlers.Frontend{
 		LintPath:   *apiurl + "/lint",
 		StaticPath: *apiurl + "/static",
-		Languages:  handlers.GetLanguagesList(supported),
+		Languages:  handlers.LanguagesList(supported),
 		StaticDir:  *staticdir,
 		Template:   template.Must(template.New("form").Parse(tmpl)),
 	}
@@ -70,8 +70,8 @@ func main() {
 	http.HandleFunc(u.Path+"/", fe.FormHandler)
 
 	// Send list of languages back to caller.
-	http.HandleFunc(u.Path+"/getlanguages", func(w http.ResponseWriter, r *http.Request) {
-		handlers.GetLanguagesHandler(w, r, supported)
+	http.HandleFunc(u.Path+"/languages", func(w http.ResponseWriter, r *http.Request) {
+		handlers.LanguagesHandler(w, r, supported)
 	})
 
 	// Lint request.

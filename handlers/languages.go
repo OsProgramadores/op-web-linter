@@ -13,7 +13,7 @@ import (
 	"github.com/osprogramadores/op-web-linter/common"
 )
 
-// GetLangResponse contains the response to /getlanguages.
+// GetLangResponse contains the response to /languages.
 type GetLangResponse struct {
 	Languages []string `json:"Languages"` // JSON array with the list of languages.
 }
@@ -21,8 +21,8 @@ type GetLangResponse struct {
 // SupportedLangs holds the supported languages.
 type SupportedLangs map[string]func(w http.ResponseWriter, r *http.Request, req LintRequest)
 
-// GetLanguagesHandler defines the handler for /getlanguages.
-func GetLanguagesHandler(w http.ResponseWriter, r *http.Request, supported SupportedLangs) {
+// LanguagesHandler defines the handler for /languages.
+func LanguagesHandler(w http.ResponseWriter, r *http.Request, supported SupportedLangs) {
 	log.Printf("LANGUAGES Request %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
 	CORSHandler(w, r)
 	if r.Method == "OPTIONS" {
@@ -31,7 +31,7 @@ func GetLanguagesHandler(w http.ResponseWriter, r *http.Request, supported Suppo
 		return
 	}
 
-	langs := GetLanguagesList(supported)
+	langs := LanguagesList(supported)
 
 	ret, err := json.Marshal(GetLangResponse{Languages: langs})
 	if err != nil {
@@ -42,8 +42,8 @@ func GetLanguagesHandler(w http.ResponseWriter, r *http.Request, supported Suppo
 	w.Write([]byte(ret))
 }
 
-// GetLanguagesList returns a string slice with all supported languages.
-func GetLanguagesList(supported SupportedLangs) []string {
+// LanguagesList returns a string slice with all supported languages.
+func LanguagesList(supported SupportedLangs) []string {
 	var langs []string
 	for lang, function := range supported {
 		if function != nil {
