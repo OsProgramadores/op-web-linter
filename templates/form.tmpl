@@ -41,7 +41,8 @@
       <div class="col-md-12">
         <label for="languageSelect">Selecione a Linguagem</label>
         <select class="form-control" id="languageSelect">
-          {{range .Languages}}<option>{{.}}</option>{{end}}
+          <!-- .Syntax contains the syntax value for ACE -->
+          {{range  $k, $v := .SupportedLangs}}<option value="{{$v.Syntax}}">{{$k}}</option>{{end}}
         </select>
       </div>
     </div>
@@ -183,9 +184,9 @@
       };
 
       // Send
-      let programText64 = encodeURIComponent(editor.getValue());
-      let lang = document.getElementById("languageSelect").value;
-      let req = JSON.stringify({"lang": lang, "text": programText64});
+      let programText = encodeURIComponent(editor.getValue());
+      let lang = document.getElementById("languageSelect");
+      let req = JSON.stringify({"lang": lang.options[lang.selectedIndex].innerText, "text": programText});
 
       xhttp.setRequestHeader("Content-type", "application/json");
       xhttp.send(req)

@@ -76,5 +76,5 @@ func LintRequestHandler(w http.ResponseWriter, r *http.Request, supported Suppor
 	}
 
 	// Call the appropriate linter.
-	supported[req.Lang](w, r, req)
+	supported[req.Lang].LintFn(w, r, req)
 }

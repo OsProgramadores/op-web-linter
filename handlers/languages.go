@@ -13,13 +13,19 @@ import (
 	"github.com/osprogramadores/op-web-linter/common"
 )
 
+// LangDetails contains details for a single language.
+type LangDetails struct {
+	Syntax string
+	LintFn func(w http.ResponseWriter, r *http.Request, req LintRequest)
+}
+
 // GetLangResponse contains the response to /languages.
 type GetLangResponse struct {
 	Languages []string `json:"Languages"` // JSON array with the list of languages.
 }
 
 // SupportedLangs holds the supported languages.
-type SupportedLangs map[string]func(w http.ResponseWriter, r *http.Request, req LintRequest)
+type SupportedLangs map[string]LangDetails
 
 // LanguagesHandler defines the handler for /languages.
 func LanguagesHandler(w http.ResponseWriter, r *http.Request, supported SupportedLangs) {
@@ -45,8 +51,8 @@ func LanguagesHandler(w http.ResponseWriter, r *http.Request, supported Supporte
 // LanguagesList returns a string slice with all supported languages.
 func LanguagesList(supported SupportedLangs) []string {
 	var langs []string
-	for lang, function := range supported {
-		if function != nil {
+	for lang, details := range supported {
+		if details.LintFn != nil {
 			langs = append(langs, lang)
 		}
 	}
@@ -56,8 +62,8 @@ func LanguagesList(supported SupportedLangs) []string {
 
 // validLang returns true if the language is a supported language.
 func validLang(lang string, supported SupportedLangs) bool {
-	function, ok := supported[lang]
-	if ok && function != nil {
+	details, ok := supported[lang]
+	if ok && details.LintFn != nil {
 		return true
 	}
 	return false

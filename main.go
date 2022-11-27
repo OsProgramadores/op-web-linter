@@ -26,14 +26,10 @@ var BuildVersion string
 
 // supported contains the supported linter languages.
 var supported = handlers.SupportedLangs{
-	"c":          lang.LintC,
-	"cpp":        nil,
-	"csharp":     nil,
-	"java":       nil,
-	"javascript": lang.LintJavascript,
-	"golang":     lang.LintGo,
-	"php":        nil,
-	"python":     lang.LintPython,
+	"C":          {Syntax: "c_cpp", LintFn: lang.LintC},
+	"Go":         {Syntax: "golang", LintFn: lang.LintGo},
+	"Javascript": {Syntax: "javascript", LintFn: lang.LintJavascript},
+	"Python":     {Syntax: "python", LintFn: lang.LintPython},
 }
 
 //go:embed "templates/form.tmpl"
@@ -52,11 +48,11 @@ func main() {
 
 	// All information required to serve the form.
 	fe := &handlers.Frontend{
-		LintPath:   *apiurl + "/lint",
-		StaticPath: *apiurl + "/static",
-		Languages:  handlers.LanguagesList(supported),
-		StaticDir:  *staticdir,
-		Template:   template.Must(template.New("form").Parse(tmpl)),
+		LintPath:       *apiurl + "/lint",
+		StaticDir:      *staticdir,
+		StaticPath:     *apiurl + "/static",
+		SupportedLangs: supported,
+		Template:       template.Must(template.New("form").Parse(tmpl)),
 	}
 
 	u, err := url.Parse(*apiurl)
