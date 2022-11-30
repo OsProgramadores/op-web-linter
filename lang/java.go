@@ -16,8 +16,8 @@ import (
 	"github.com/osprogramadores/op-web-linter/handlers"
 )
 
-// LintC lints programs written in C. For now, only reformats code with indent.
-func LintC(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
+// LintJava lints programs written in Java. For now, only reformats code with google-java-format.
+func LintJava(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	original, err := url.QueryUnescape(req.Text)
 	if err != nil {
 		common.HttpError(w, err.Error(), http.StatusInternalServerError)
@@ -26,7 +26,7 @@ func LintC(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	log.Printf("Decoded program: %s\n", original)
 
 	// Save program text in request to file.
-	tempdir, tempfile, err := saveProgramToFile(original, "*.c")
+	tempdir, tempfile, err := saveProgramToFile(original, "*.java")
 	if err != nil {
 		common.HttpError(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -35,11 +35,8 @@ func LintC(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 
 	var messages []string
 
-	// Reformat source code with indent.
-	reformatted, err := Execute("indent", "-st", "--no-tabs", "--tab-size4", "--indent-level4",
-		"--braces-on-if-line", "--cuddle-else", "--braces-on-func-def-line", "--braces-on-struct-decl-line",
-		"--cuddle-do-while", "--no-space-after-function-call-names", "--no-space-after-parentheses",
-		"--dont-break-procedure-type", tempfile)
+	// Reformat source code with google-java-format.
+	reformatted, err := Execute("/usr/lib/jvm/java-17-openjdk/bin/java", "-jar", "google-java-format-1.15.0-all-deps.jar", tempfile)
 	if err != nil {
 		messages = append(messages, fmt.Sprintf("Reformat failed: %v", err))
 	}

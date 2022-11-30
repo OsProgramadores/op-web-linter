@@ -28,6 +28,7 @@ var BuildVersion string
 var supported = handlers.SupportedLangs{
 	"C":          {Syntax: "c_cpp", LintFn: lang.LintC},
 	"Go":         {Syntax: "golang", LintFn: lang.LintGo},
+	"Java":       {Syntax: "java", LintFn: lang.LintJava},
 	"Javascript": {Syntax: "javascript", LintFn: lang.LintJavascript},
 	"Python":     {Syntax: "python", LintFn: lang.LintPython},
 }
