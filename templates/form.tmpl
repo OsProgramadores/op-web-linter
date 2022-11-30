@@ -41,8 +41,8 @@
       <div class="col-md-12">
         <label for="languageSelect">Selecione a Linguagem</label>
         <select class="form-control" id="languageSelect">
-          <!-- .Syntax contains the syntax value for ACE -->
-          {{range  $k, $v := .SupportedLangs}}<option value="{{$v.Syntax}}">{{$k}}</option>{{end}}
+          <!-- .Display contains the user-visible dropbox text -->
+          {{range  $k, $v := .SupportedLangs}}<option value="{{$k}}">{{$v.Display}}</option>{{end}}
         </select>
       </div>
     </div>
@@ -139,11 +139,12 @@
 
     // Set editor language based on language selected in form.
     const languageSet = document.getElementById("languageSelect");
+    let req = JSON.stringify({"lang": lang.options[lang.selectedIndex].innerText, "text": programText});
     languageSet.onclick = () => {
-      editor.getSession().setMode("ace/mode/" + languageSet.value);
+      editor.getSession().setMode("ace/mode/" + languageSet.options[languageSet.selectedIndex].innerText);
     }
     // Set initial value for the language.
-    editor.getSession().setMode("ace/mode/" + languageSet.value);
+    editor.getSession().setMode("ace/mode/" + languageSet.options[languageSet.selectedIndex].innerText);
 
     function lint() {
       spinner.style.visibility = "visible";
@@ -186,7 +187,7 @@
       // Send
       let programText = encodeURIComponent(editor.getValue());
       let lang = document.getElementById("languageSelect");
-      let req = JSON.stringify({"lang": lang.options[lang.selectedIndex].innerText, "text": programText});
+      let req = JSON.stringify({"lang": lang.value, "text": programText});
 
       xhttp.setRequestHeader("Content-type", "application/json");
       xhttp.send(req)

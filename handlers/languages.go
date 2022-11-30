@@ -15,8 +15,8 @@ import (
 
 // LangDetails contains details for a single language.
 type LangDetails struct {
-	Syntax string
-	LintFn func(w http.ResponseWriter, r *http.Request, req LintRequest)
+	Display string
+	LintFn  func(w http.ResponseWriter, r *http.Request, req LintRequest)
 }
 
 // GetLangResponse contains the response to /languages.
