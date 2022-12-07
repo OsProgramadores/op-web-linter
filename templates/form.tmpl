@@ -139,12 +139,21 @@
 
     // Set editor language based on language selected in form.
     const languageSet = document.getElementById("languageSelect");
-    let req = JSON.stringify({"lang": lang.options[lang.selectedIndex].innerText, "text": programText});
     languageSet.onclick = () => {
-      editor.getSession().setMode("ace/mode/" + languageSet.options[languageSet.selectedIndex].innerText);
+      SetACELang(languageSet)
     }
     // Set initial value for the language.
-    editor.getSession().setMode("ace/mode/" + languageSet.options[languageSet.selectedIndex].innerText);
+    SetACELang(languageSet)
+
+    // SetACELang sets the language used by the ACE editor.
+    function SetACELang(langobj) {
+      // Ugly hack: ACE considers C and C++ a single language: c_cpp
+      let chosenLang = langobj.options[langobj.selectedIndex].value;
+      if (chosenLang == "c" || chosenLang == "cpp") {
+        chosenLang = "c_cpp"
+      }
+      editor.getSession().setMode("ace/mode/" + chosenLang);
+    }
 
     function lint() {
       spinner.style.visibility = "visible";

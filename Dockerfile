@@ -1,4 +1,4 @@
-FROM golang:1-alpine AS builder
+FROM alpine:3.17
 
 MAINTAINER Marco Paganini <paganini@paganini.net>
 
@@ -9,7 +9,7 @@ ARG BUILD_DIR=/tmp/build/src/$PROJECT
 ENV CGO_ENABLED 0
 ENV PATH="${PATH}:/usr/local/bin"
 
-RUN apk add --no-cache ca-certificates curl git indent make openjdk17 nodejs npm python3 py3-pylint && \
+RUN apk add --no-cache ca-certificates clang15 clang15-extra-tools curl git go indent make openjdk17 nodejs npm python3 py3-pylint && \
     export HOME="/tmp/build" && \
     export GOPATH="/tmp/build" && \
     mkdir -p /usr/local/bin && \
