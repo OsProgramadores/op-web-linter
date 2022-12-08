@@ -20,7 +20,7 @@ import (
 func LintC(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	original, err := url.QueryUnescape(req.Text)
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	log.Printf("Decoded program: %s\n", original)
@@ -28,7 +28,7 @@ func LintC(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	// Save program text in request to file.
 	tempdir, tempfile, err := saveProgramToFile(original, "*.c")
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer os.RemoveAll(tempdir)
@@ -53,7 +53,7 @@ func LintC(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	}
 	jresp, err := json.Marshal(resp)
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	log.Printf("JSON response: %v", string(jresp))

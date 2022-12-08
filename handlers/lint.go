@@ -40,13 +40,13 @@ func LintRequestHandler(w http.ResponseWriter, r *http.Request, supported Suppor
 
 	// Only POST request.
 	if r.Method != "POST" {
-		common.HttpError(w, "Only POST requested accepted", http.StatusMethodNotAllowed)
+		common.HTTPError(w, "Only POST requested accepted", http.StatusMethodNotAllowed)
 		return
 	}
 
 	// Content-type must be application/json.
 	if !strings.Contains(r.Header.Get("content-type"), "application/json") {
-		common.HttpError(w, "Incorrect content-type. Expected: application/json", http.StatusUnsupportedMediaType)
+		common.HTTPError(w, "Incorrect content-type. Expected: application/json", http.StatusUnsupportedMediaType)
 		return
 	}
 
@@ -57,21 +57,21 @@ func LintRequestHandler(w http.ResponseWriter, r *http.Request, supported Suppor
 
 	// Program text must not be null.
 	if len(req.Text) == 0 {
-		common.HttpError(w, "Program text cannot be empty", http.StatusBadRequest)
+		common.HTTPError(w, "Program text cannot be empty", http.StatusBadRequest)
 		return
 	}
 
 	// Validate as JSON.
 	jreq, err := json.Marshal(req)
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusBadRequest)
+		common.HTTPError(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	log.Printf("Parsed JSON: %v\n", string(jreq))
 
 	// Test valid languages.
 	if !validLang(req.Lang, supported) {
-		common.HttpError(w, "Invalid Language", http.StatusBadRequest)
+		common.HTTPError(w, "Invalid Language", http.StatusBadRequest)
 		return
 	}
 

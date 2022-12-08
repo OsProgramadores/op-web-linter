@@ -25,14 +25,14 @@ var eslintLineRegex = regexp.MustCompile("^[ \t]*([0-9]+):([0-9]+)[ ]*(.*)")
 func LintJavascript(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	original, err := url.QueryUnescape(req.Text)
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	log.Printf("Decoded program: %s\n", original)
 
 	tempdir, tempfile, err := saveProgramToFile(original, "*.js")
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer os.RemoveAll(tempdir)
@@ -48,7 +48,7 @@ func LintJavascript(w http.ResponseWriter, r *http.Request, req handlers.LintReq
 	}
 	jresp, err := json.Marshal(resp)
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	log.Printf("JSON response: %v", string(jresp))

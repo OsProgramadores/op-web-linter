@@ -41,7 +41,7 @@ func LanguagesHandler(w http.ResponseWriter, r *http.Request, supported Supporte
 
 	ret, err := json.Marshal(GetLangResponse{Languages: langs})
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("content-type", "application/json")

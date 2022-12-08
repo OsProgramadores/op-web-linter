@@ -25,7 +25,7 @@ var goLineRegex = regexp.MustCompile("^([^:]+):([0-9]+):([0-9]+):[ ]*(.*)")
 func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	original, err := url.QueryUnescape(req.Text)
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	log.Printf("Decoded program: %s\n", original)
@@ -33,7 +33,7 @@ func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	// Save program text in request to file.
 	tempdir, tempfile, err := saveProgramToFile(original, "*.go")
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer os.RemoveAll(tempdir)
@@ -49,7 +49,7 @@ func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	} else {
 		// Rewrite reformatted program to tempfile.
 		if err := os.WriteFile(tempfile, []byte(reformatted), 0644); err != nil {
-			common.HttpError(w, err.Error(), http.StatusInternalServerError)
+			common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -57,7 +57,7 @@ func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	// Golint.
 	m, ok, err := runGolint(tempfile)
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if !ok {
@@ -79,7 +79,7 @@ func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	}
 	jresp, err := json.Marshal(resp)
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	log.Printf("JSON response: %v", string(jresp))

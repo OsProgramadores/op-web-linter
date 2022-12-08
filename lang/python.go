@@ -26,7 +26,7 @@ var pylintLineRegex = regexp.MustCompile("^[^:]+:([0-9]+):([0-9]+):[ ]*(.*)")
 func LintPython(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	original, err := url.QueryUnescape(req.Text)
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -34,7 +34,7 @@ func LintPython(w http.ResponseWriter, r *http.Request, req handlers.LintRequest
 
 	tempdir, tempfile, err := saveProgramToFile(original, "*.py")
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer os.RemoveAll(tempdir)
@@ -49,7 +49,7 @@ func LintPython(w http.ResponseWriter, r *http.Request, req handlers.LintRequest
 	}
 	jresp, err := json.Marshal(resp)
 	if err != nil {
-		common.HttpError(w, err.Error(), http.StatusInternalServerError)
+		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	log.Printf("JSON response: %v", string(jresp))

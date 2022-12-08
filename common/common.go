@@ -14,8 +14,8 @@ import (
 // Maximum output line length (in characters).
 const outputLineLength = 100
 
-// HttpError logs the error and returns the appropriate message & http code.
-func HttpError(w http.ResponseWriter, msg string, httpcode int) {
+// HTTPError logs the error and returns the appropriate message & http code.
+func HTTPError(w http.ResponseWriter, msg string, httpcode int) {
 	m := fmt.Sprintf("Returned HTTP error %d: %v", httpcode, msg)
 	log.Print(m)
 	http.Error(w, msg, httpcode)
