@@ -5,6 +5,9 @@
 package lang
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -38,4 +41,14 @@ func saveRequestToFile(data string, template string) (string, string, error) {
 		return "", "", err
 	}
 	return tempdir, tempfd.Name(), nil
+}
+
+// prettyJSONString converts a "text" slice of JSON bytes into a pretty
+// formatted JSON string.
+func prettyJSONString(j []byte) string {
+	var pretty bytes.Buffer
+	if err := json.Indent(&pretty, j, "", "    "); err != nil {
+		return fmt.Sprintf("Error printing JSON: %v", err)
+	}
+	return pretty.String()
 }

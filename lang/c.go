@@ -57,7 +57,7 @@ func LintC(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	// clang-tidy returns an error code (1) on errors, but nothing on warnings.
 	// We want to indicate every situation, so we ignore it here and look for
 	// the output. Blank output means no errors.
-	out, err := Execute("clang-tidy", "--checks="+strings.Join(clangChecks, ","), tempfile, "--")
+	out, _ := Execute("clang-tidy", "--checks="+strings.Join(clangChecks, ","), tempfile, "--")
 	// Use cppFilterOutput since it's basically a clang-tidy output beautifier.
 	lines := cppFilterOutput(strings.Split(out, "\n"), tempfile)
 	messages = append(messages, common.SlicePrefix(lines, "clang-tidy")...)
@@ -77,7 +77,7 @@ func LintC(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	log.Printf("JSON response: %v", string(jresp))
+	log.Printf("JSON response:\n%s", prettyJSONString(jresp))
 	w.Write(jresp)
 	w.Write([]byte("\n"))
 }

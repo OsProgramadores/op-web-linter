@@ -84,7 +84,7 @@ func LintCPP(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	log.Printf("JSON response: %v", string(jresp))
+	log.Printf("JSON response:\n%s", prettyJSONString(jresp))
 	w.Write(jresp)
 	w.Write([]byte("\n"))
 }
