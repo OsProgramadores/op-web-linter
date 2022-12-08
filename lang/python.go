@@ -36,7 +36,7 @@ func LintPython(w http.ResponseWriter, r *http.Request, req handlers.LintRequest
 	// Create response, convert to JSON and return.
 	resp := handlers.LintResponse{
 		Pass:          err == nil,
-		ErrorMessages: common.SlicePrefix(PythonErrorParse(out, tempfile), "pylint"),
+		ErrorMessages: common.SlicePrefix(PythonFilterOutput(out, tempfile), "pylint"),
 	}
 	jresp, err := json.Marshal(resp)
 	if err != nil {
@@ -48,10 +48,10 @@ func LintPython(w http.ResponseWriter, r *http.Request, req handlers.LintRequest
 	w.Write([]byte("\n"))
 }
 
-// PythonErrorParse remove undesirable messages from the pylint output.
+// PythonFilterOutput remove undesirable messages from the pylint output.
 // pylint3 is very verbose. Limit output to the lines starting with our
 // filename.
-func PythonErrorParse(output string, tempfile string) []string {
+func PythonFilterOutput(output string, tempfile string) []string {
 	var ret []string
 	for _, v := range strings.Split(output, "\n") {
 		if !strings.HasPrefix(v, tempfile) {

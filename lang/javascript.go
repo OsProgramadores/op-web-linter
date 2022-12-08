@@ -36,7 +36,7 @@ func LintJavascript(w http.ResponseWriter, r *http.Request, req handlers.LintReq
 	// Create response, convert to JSON and return.
 	resp := handlers.LintResponse{
 		Pass:          err == nil,
-		ErrorMessages: common.SlicePrefix(JavascriptErrorParse(out, tempfile), "eslint"),
+		ErrorMessages: common.SlicePrefix(JavascriptFilterOutput(out, tempfile), "eslint"),
 	}
 	jresp, err := json.Marshal(resp)
 	if err != nil {
@@ -48,8 +48,8 @@ func LintJavascript(w http.ResponseWriter, r *http.Request, req handlers.LintReq
 	w.Write([]byte("\n"))
 }
 
-// JavascriptErrorParse remove undesirable messages from the eslint output.
-func JavascriptErrorParse(list []string, tempfile string) []string {
+// JavascriptFilterOutput remove undesirable messages from the eslint output.
+func JavascriptFilterOutput(list []string, tempfile string) []string {
 	var ret []string
 	for _, v := range list {
 		// eslint adds a line with the filename.

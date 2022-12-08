@@ -87,13 +87,13 @@ func runGolint(fname string) ([]string, bool, error) {
 	out := strings.Split(o, "\n")
 
 	if err != nil {
-		return common.SlicePrefix(goErrorParse(out), "golint"), false, err
+		return common.SlicePrefix(goFilterOutput(out), "golint"), false, err
 	}
 	// No errors in the program.
 	if len(out) == 0 {
 		return []string{}, true, nil
 	}
-	return common.SlicePrefix(goErrorParse(out), "golint"), false, nil
+	return common.SlicePrefix(goFilterOutput(out), "golint"), false, nil
 }
 
 // runGoBuild runs "go build" on the source file and returns the output.
@@ -106,11 +106,11 @@ func runGoBuild(dirname, fname string) ([]string, bool) {
 	if retcode == 0 {
 		return []string{}, true
 	}
-	return common.SlicePrefix(goErrorParse(out), "go build"), false
+	return common.SlicePrefix(goFilterOutput(out), "go build"), false
 }
 
-// goErrorParse remove undesirable lines and formats the output from go build.
-func goErrorParse(list []string) []string {
+// goFilterOutput remove undesirable lines and formats the output from go build.
+func goFilterOutput(list []string) []string {
 	var ret []string
 	for _, v := range list {
 		// Go builds adds lines starting with #
