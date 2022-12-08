@@ -58,7 +58,8 @@ func wordwrap(s string, max int) []string {
 			totlen = 0
 		}
 		words = append(words, word)
-		totlen += len(word)
+		// +1 == space at the end of the word.
+		totlen += len(word) + 1
 	}
 
 	if totlen != 0 {
