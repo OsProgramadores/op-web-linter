@@ -5,10 +5,14 @@ package common
 
 import (
 	"fmt"
+	"html"
 	"log"
 	"net/http"
 	"strings"
 )
+
+// Maximum output line length (in characters).
+const outputLineLength = 100
 
 // HttpError logs the error and returns the appropriate message & http code.
 func HttpError(w http.ResponseWriter, msg string, httpcode int) {
@@ -25,13 +29,13 @@ func SlicePrefix(slice []string, prefix string) []string {
 	indent := strings.Repeat(" ", len(prefix)+2)
 
 	for _, line := range slice {
-		for i, subline := range wordwrap(line, 80) {
+		for i, subline := range wordwrap(line, outputLineLength) {
 			// Add string on first line, indent on following ones.
 			p := indent
 			if i == 0 {
 				p = "[" + prefix + "]"
 			}
-			ret = append(ret, fmt.Sprintf("%s %s", p, subline))
+			ret = append(ret, fmt.Sprintf("%s %s", p, html.EscapeString(subline)))
 		}
 	}
 	return ret
