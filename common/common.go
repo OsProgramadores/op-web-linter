@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // HttpError logs the error and returns the appropriate message & http code.
@@ -19,8 +20,45 @@ func HttpError(w http.ResponseWriter, msg string, httpcode int) {
 // SlicePrefix adds a prefix to every string line in the slice.
 func SlicePrefix(slice []string, prefix string) []string {
 	var ret []string
+
+	// Print prefix on first line, indent on following ones.
+	indent := strings.Repeat(" ", len(prefix)+2)
+
 	for _, line := range slice {
-		ret = append(ret, fmt.Sprintf("[%s] %s", prefix, line))
+		for i, subline := range wordwrap(line, 80) {
+			// Add string on first line, indent on following ones.
+			p := indent
+			if i == 0 {
+				p = "[" + prefix + "]"
+			}
+			ret = append(ret, fmt.Sprintf("%s %s", p, subline))
+		}
+	}
+	return ret
+}
+
+// wordwrap wraps the string to the number of columns given and returns a
+// string slice with the new (wrapped) lines.
+func wordwrap(s string, max int) []string {
+	var (
+		ret    []string
+		totlen int
+		word   string
+		words  []string
+	)
+
+	for _, word = range strings.Split(s, " ") {
+		if totlen+len(word) > max {
+			ret = append(ret, strings.Join(words, " "))
+			words = nil
+			totlen = 0
+		}
+		words = append(words, word)
+		totlen += len(word)
+	}
+
+	if totlen != 0 {
+		ret = append(ret, strings.Join(words, " "))
 	}
 	return ret
 }

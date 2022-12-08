@@ -21,6 +21,9 @@ import (
 // Regexp matching clang-tidy error lines.
 var clangTidyLineRegex = regexp.MustCompile("^([^:]+):([0-9]+):([0-9]+):[ ]*(.*)")
 
+// Regexp matching clang-tidy cruft lines (to be removed).
+var clangTidyCruftRegex = regexp.MustCompile(`^(\d+ warnings generated|Suppressed \d+ warnings|Use -header-filter)`)
+
 // LintCPP lints programs written in C++. For now, only reformats code with indent.
 func LintCPP(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	original, err := url.QueryUnescape(req.Text)
@@ -62,7 +65,7 @@ func LintCPP(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	if err != nil {
 		messages = append(messages, fmt.Sprintf("Error running clang-tidy: %v", err))
 	} else {
-		lines := cppErrorParse(strings.Split(out, "\n"), tempfile)
+		lines := cppFilterOutput(strings.Split(out, "\n"), tempfile)
 		messages = append(messages, common.SlicePrefix(lines, "clang-tidy")...)
 	}
 	// Pass if no messages from the reformatter or linter.
@@ -85,12 +88,16 @@ func LintCPP(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	w.Write([]byte("\n"))
 }
 
-// cppErrorParse remove undesirable messages from the clang-tidy output.
-func cppErrorParse(list []string, tempfile string) []string {
+// cppFilterOutput remove undesirable messages from the clang-tidy output.
+func cppFilterOutput(list []string, tempfile string) []string {
 	var ret []string
 	for i, v := range list {
 		// Don't emit last empty line.
 		if i == len(list)-1 && v == "" {
+			continue
+		}
+		// Remove cruft lines.
+		if clangTidyCruftRegex.MatchString(v) {
 			continue
 		}
 
