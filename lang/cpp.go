@@ -61,7 +61,9 @@ func LintCPP(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 
 	// Check code with clang-tidy. Having err != nil here means we could not
 	// execute clang-tidy. Blank output means no errors.
-	out, err := Execute("clang-tidy", "--checks=readability*", tempfile, "--", "--std=c++14")
+	out, err := Execute("clang-tidy",
+		"--checks=readability*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,google-*",
+		tempfile, "--", "--std=c++14")
 	if err != nil {
 		messages = append(messages, fmt.Sprintf("Error running clang-tidy: %v", err))
 	} else {
