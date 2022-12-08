@@ -16,11 +16,11 @@ import (
 // filename with extension foo.  Callers must use defer os.Removeall(tempdir)
 // in their functions.
 func saveRequestToFile(data string, template string) (string, string, error) {
-	original, err := url.QueryUnescape(data)
+	unescaped, err := url.QueryUnescape(data)
 	if err != nil {
 		return "", "", err
 	}
-	log.Printf("Decoded Request: %s\n", original)
+	log.Printf("Decoded Request: %s\n", unescaped)
 
 	tempdir, err := os.MkdirTemp("", "")
 	if err != nil {
@@ -33,7 +33,7 @@ func saveRequestToFile(data string, template string) (string, string, error) {
 	}
 	defer tempfd.Close()
 
-	if _, err = tempfd.Write([]byte(data)); err != nil {
+	if _, err = tempfd.Write([]byte(unescaped)); err != nil {
 		os.RemoveAll(tempdir)
 		return "", "", err
 	}
