@@ -5,15 +5,23 @@
 package lang
 
 import (
+	"log"
+	"net/url"
 	"os"
 )
 
-// saveProgramToFile saves the program in into a temporary file and returns the
-// name of the temporary directory and file.  The template parameter specifies
-// how the filename will appear.  Use "*.foo" to have a temporary filename with
-// extension foo.  Callers must use defer os.Removeall(tempdir) in their
-// functions.
-func saveProgramToFile(data string, template string) (string, string, error) {
+// saveRequestToFile unescapes the passed request data and saves it into a
+// temporary file, returning its directory and name. The template parameter
+// specifies how the filename will appear.  Use "*.foo" to have a temporary
+// filename with extension foo.  Callers must use defer os.Removeall(tempdir)
+// in their functions.
+func saveRequestToFile(data string, template string) (string, string, error) {
+	original, err := url.QueryUnescape(data)
+	if err != nil {
+		return "", "", err
+	}
+	log.Printf("Decoded Request: %s\n", original)
+
 	tempdir, err := os.MkdirTemp("", "")
 	if err != nil {
 		return "", "", err

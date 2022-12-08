@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -26,15 +25,8 @@ var clangTidyCruftRegex = regexp.MustCompile(`^(\d+ warnings generated|Suppresse
 
 // LintCPP lints programs written in C++. For now, only reformats code with indent.
 func LintCPP(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
-	original, err := url.QueryUnescape(req.Text)
-	if err != nil {
-		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	log.Printf("Decoded program: %s\n", original)
-
 	// Save program text in request to file.
-	tempdir, tempfile, err := saveProgramToFile(original, "*.cpp")
+	tempdir, tempfile, err := saveRequestToFile(req.Text, "*.cpp")
 	if err != nil {
 		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -77,7 +69,7 @@ func LintCPP(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	resp := handlers.LintResponse{
 		Pass:            pass,
 		ErrorMessages:   messages,
-		Reformatted:     reformatted != original && reformatErr == nil,
+		Reformatted:     reformatted != req.Text && reformatErr == nil,
 		ReformattedText: reformatted,
 	}
 	jresp, err := json.Marshal(resp)

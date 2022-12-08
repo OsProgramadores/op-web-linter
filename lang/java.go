@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 
 	"github.com/osprogramadores/op-web-linter/common"
@@ -18,15 +17,8 @@ import (
 
 // LintJava lints programs written in Java. For now, only reformats code with google-java-format.
 func LintJava(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
-	original, err := url.QueryUnescape(req.Text)
-	if err != nil {
-		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	log.Printf("Decoded program: %s\n", original)
-
 	// Save program text in request to file.
-	tempdir, tempfile, err := saveProgramToFile(original, "*.java")
+	tempdir, tempfile, err := saveRequestToFile(req.Text, "*.java")
 	if err != nil {
 		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -45,7 +37,7 @@ func LintJava(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) 
 	resp := handlers.LintResponse{
 		Pass:            err == nil,
 		ErrorMessages:   messages,
-		Reformatted:     reformatted != original && err == nil,
+		Reformatted:     reformatted != req.Text && err == nil,
 		ReformattedText: reformatted,
 	}
 	jresp, err := json.Marshal(resp)

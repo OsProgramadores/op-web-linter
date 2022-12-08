@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -23,15 +22,8 @@ var goLineRegex = regexp.MustCompile("^([^:]+):([0-9]+):([0-9]+):[ ]*(.*)")
 
 // LintGo lints programs written in Go.
 func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
-	original, err := url.QueryUnescape(req.Text)
-	if err != nil {
-		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	log.Printf("Decoded program: %s\n", original)
-
 	// Save program text in request to file.
-	tempdir, tempfile, err := saveProgramToFile(original, "*.go")
+	tempdir, tempfile, err := saveRequestToFile(req.Text, "*.go")
 	if err != nil {
 		common.HTTPError(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -74,7 +66,7 @@ func LintGo(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	resp := handlers.LintResponse{
 		Pass:            len(messages) == 0,
 		ErrorMessages:   messages,
-		Reformatted:     reformatted != original && gofmterr == nil,
+		Reformatted:     reformatted != req.Text && gofmterr == nil,
 		ReformattedText: reformatted,
 	}
 	jresp, err := json.Marshal(resp)
