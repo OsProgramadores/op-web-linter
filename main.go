@@ -26,9 +26,9 @@ var BuildVersion string
 
 // supported contains the supported linter languages.
 var supported = handlers.SupportedLangs{
-	"c":          {Display: "C  (reformat only)", LintFn: lang.LintC},
-	"cpp":        {Display: "C++  (lint + reformat)", LintFn: lang.LintCPP},
-	"golang":     {Display: "Go  (lint + reformat)", LintFn: lang.LintGo},
+	"c":          {Display: "C", LintFn: lang.LintC},
+	"cpp":        {Display: "C++", LintFn: lang.LintCPP},
+	"golang":     {Display: "Go", LintFn: lang.LintGo},
 	"java":       {Display: "Java  (reformat only)", LintFn: lang.LintJava},
 	"javascript": {Display: "Javascript (lint only)", LintFn: lang.LintJavascript},
 	"python":     {Display: "Python  (lint only)", LintFn: lang.LintPython},

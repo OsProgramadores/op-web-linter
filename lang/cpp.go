@@ -25,6 +25,17 @@ var clangTidyCruftRegex = regexp.MustCompile(`^(\d+ warnings generated|Suppresse
 
 // LintCPP lints programs written in C++. For now, only reformats code with indent.
 func LintCPP(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
+	var clangChecks = []string{
+		"readability*",
+		"clang-analyzer-*",
+		"concurrency-*",
+		"cppcoreguidelines-*",
+		"google-*",
+		"-readability-identifier-length",
+		"-readability-magic-numbers",
+		"-cppcoreguidelines-avoid-magic-numbers",
+	}
+
 	// Save program text in request to file.
 	tempdir, tempfile, err := saveRequestToFile(req.Text, "*.cpp")
 	if err != nil {
@@ -51,17 +62,13 @@ func LintCPP(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) {
 	}
 	reformatErr := err
 
-	// Check code with clang-tidy. Having err != nil here means we could not
-	// execute clang-tidy. Blank output means no errors.
-	out, err := Execute("clang-tidy",
-		"--checks=readability*,clang-analyzer-*,concurrency-*,cppcoreguidelines-*,google-*",
-		tempfile, "--", "--std=c++14")
-	if err != nil {
-		messages = append(messages, fmt.Sprintf("Error running clang-tidy: %v", err))
-	} else {
-		lines := cppFilterOutput(strings.Split(out, "\n"), tempfile)
-		messages = append(messages, common.SlicePrefix(lines, "clang-tidy")...)
-	}
+	// clang-tidy returns an error code (1) on errors, but nothing on warnings.
+	// We want to indicate every situation, so we ignore it here and look for
+	// the output. Blank output means no errors.
+	out, _ := Execute("clang-tidy", "--checks="+strings.Join(clangChecks, ","), tempfile, "--", "--std=c++14")
+	lines := cppFilterOutput(strings.Split(out, "\n"), tempfile)
+	messages = append(messages, common.SlicePrefix(lines, "clang-tidy")...)
+
 	// Pass if no messages from the reformatter or linter.
 	pass := len(messages) == 0
 
