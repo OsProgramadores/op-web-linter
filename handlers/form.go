@@ -23,7 +23,7 @@ type Frontend struct {
 
 // FormHandler serves the main form to the user.
 func (x *Frontend) FormHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("FORM Request %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+	log.Printf("FORM Request %s %s %s\n", common.RealRemoteAddress(r), r.Method, r.URL)
 
 	// Allow in iframes.
 	w.Header().Set("X-Frame-Options", "SAMEORIGIN")

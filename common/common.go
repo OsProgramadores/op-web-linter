@@ -21,6 +21,17 @@ func HTTPError(w http.ResponseWriter, msg string, httpcode int) {
 	http.Error(w, msg, httpcode)
 }
 
+// RealRemoteAddress returns the RemoteAddr of the http.Request or the contents of
+// the X-Real-IP header, if that is set. Use this function to get the the
+// client IP in a reverse proxied environment.
+func RealRemoteAddress(r *http.Request) string {
+	xRealIP := r.Header.Get("X-Real-IP")
+	if xRealIP != "" {
+		return xRealIP + " (proxied)"
+	}
+	return r.RemoteAddr
+}
+
 // SlicePrefix adds a prefix to every string line in the slice.
 func SlicePrefix(slice []string, prefix string) []string {
 	var ret []string

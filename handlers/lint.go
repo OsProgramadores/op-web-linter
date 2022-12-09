@@ -30,7 +30,7 @@ type LintResponse struct {
 // LintRequestHandler handles /lint. The entire JSON request needs
 // to be posted as field "request" in the form.
 func LintRequestHandler(w http.ResponseWriter, r *http.Request, supported SupportedLangs) {
-	log.Printf("LINT Request %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+	log.Printf("LINT Request %s %s %s\n", common.RealRemoteAddress(r), r.Method, r.URL)
 	CORSHandler(w, r)
 	if r.Method == "OPTIONS" {
 		log.Printf("Got OPTIONS method. Returning.")

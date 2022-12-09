@@ -29,7 +29,7 @@ type SupportedLangs map[string]LangDetails
 
 // LanguagesHandler defines the handler for /languages.
 func LanguagesHandler(w http.ResponseWriter, r *http.Request, supported SupportedLangs) {
-	log.Printf("LANGUAGES Request %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+	log.Printf("LANGUAGES Request %s %s %s\n", common.RealRemoteAddress(r), r.Method, r.URL)
 	CORSHandler(w, r)
 	if r.Method == "OPTIONS" {
 		log.Printf("Got OPTIONS method. Returning.")
