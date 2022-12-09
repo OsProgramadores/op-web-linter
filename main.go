@@ -40,7 +40,7 @@ var tmpl string
 func main() {
 	var (
 		port      = flag.Int("port", 10000, "Specify the TCP port to listen to")
-		apiurl    = flag.String("url", "http://localhost:{port}", "Base URL for API requests")
+		apiurl    = flag.String("url", "http://localhost:{port}", "Base URL for API requests (no slash at the end)")
 		staticdir = flag.String("staticdir", "./static", "Directory where we serve static files")
 	)
 	flag.Parse()
@@ -48,24 +48,19 @@ func main() {
 	// Replace {port} with actual port.
 	*apiurl = strings.ReplaceAll(*apiurl, "{port}", fmt.Sprintf("%d", *port))
 
+	u, err := url.Parse(*apiurl)
+	if err != nil {
+		log.Fatalf("Error parsing URL: %v", err)
+	}
 	// All information required to serve the form.
 	fe := &handlers.Frontend{
 		LintPath:       *apiurl + "/lint",
 		StaticDir:      *staticdir,
 		StaticPath:     *apiurl + "/static",
+		BasePath:       u.Path + "/",
 		SupportedLangs: supported,
 		Template:       template.Must(template.New("form").Parse(tmpl)),
 	}
-
-	u, err := url.Parse(*apiurl)
-	if err != nil {
-		log.Fatalf("Error parsing URL: %v", err)
-	}
-
-	staticpath := u.Path + staticURLPath
-
-	// Main HTML form for interactive access.
-	http.HandleFunc(u.Path+"/", fe.FormHandler)
 
 	// Send list of languages back to caller.
 	http.HandleFunc(u.Path+"/languages", func(w http.ResponseWriter, r *http.Request) {
@@ -79,8 +74,14 @@ func main() {
 
 	// Everything under staticURLPath is served as a regular file from rootdir.
 	// This allows us to keep local javascript files and other accessory files.
+	staticpath := u.Path + staticURLPath
 	fs := http.FileServer(http.Dir(*staticdir))
 	http.Handle(staticpath, http.StripPrefix(staticpath, fs))
+
+	// Main HTML form for interactive access. This is also the "catch-all" URL
+	// for anything not matched in the more specific handlers above. The
+	// function will emit a 404 if the path is anything other than "/".
+	http.HandleFunc(u.Path+"/", fe.FormHandler)
 
 	log.Printf("Listening on port %d", *port)
 	log.Printf("URL for API requests: %s", *apiurl)
