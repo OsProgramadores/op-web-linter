@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	execTimeout = time.Duration(5 * time.Second)
+	execTimeout = time.Duration(15 * time.Second)
 )
 
 // Execute runs the program specified by name with the command-line specified
