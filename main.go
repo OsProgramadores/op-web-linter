@@ -17,8 +17,12 @@ import (
 	"github.com/osprogramadores/op-web-linter/lang"
 )
 
-// URL path for static files.
-const staticURLPath = "/static/"
+// API paths.
+const (
+	staticURLPath    = "/static"
+	lintURLPath      = "/lint"
+	languagesURLPath = "/languages"
+)
 
 // BuildVersion Holds the current git HEAD version number.
 // This is filled in by the build process (make).
@@ -52,12 +56,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error parsing URL: %v", err)
 	}
-	// All information required to serve the form.
+	// All information required to serve the form. All paths end in slash.
 	fe := &handlers.Frontend{
-		LintPath:       *apiurl + "/lint",
+		RootPath:       u.Path + "/",
+		LintPath:       u.Path + lintURLPath + "/",
+		StaticPath:     u.Path + staticURLPath + "/",
+		LanguagesPath:  u.Path + languagesURLPath + "/",
 		StaticDir:      *staticdir,
-		StaticPath:     *apiurl + "/static",
-		BasePath:       u.Path + "/",
 		SupportedLangs: supported,
 		Template:       template.Must(template.New("form").Parse(tmpl)),
 	}
@@ -68,24 +73,23 @@ func main() {
 	})
 
 	// Lint request.
-	http.HandleFunc(u.Path+"/lint", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(fe.LintPath, func(w http.ResponseWriter, r *http.Request) {
 		handlers.LintRequestHandler(w, r, supported)
 	})
 
 	// Everything under staticURLPath is served as a regular file from rootdir.
 	// This allows us to keep local javascript files and other accessory files.
-	staticpath := u.Path + staticURLPath
 	fs := http.FileServer(http.Dir(*staticdir))
-	http.Handle(staticpath, http.StripPrefix(staticpath, fs))
+	http.Handle(fe.StaticPath, http.StripPrefix(fe.StaticPath, fs))
 
 	// Main HTML form for interactive access. This is also the "catch-all" URL
 	// for anything not matched in the more specific handlers above. The
 	// function will emit a 404 if the path is anything other than "/".
-	http.HandleFunc(u.Path+"/", fe.FormHandler)
+	http.HandleFunc(fe.RootPath, fe.FormHandler)
 
 	log.Printf("Listening on port %d", *port)
 	log.Printf("URL for API requests: %s", *apiurl)
-	log.Printf("Serving static files on path: %s", staticpath)
+	log.Printf("Serving static files on path: %s", fe.StaticPath)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }

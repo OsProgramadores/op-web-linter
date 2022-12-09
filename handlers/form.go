@@ -14,8 +14,9 @@ import (
 
 // Frontend holds the parameters passed to the frontend form.
 type Frontend struct {
-	BasePath       string         // The base path for the server (default = "/").
-	LintPath       string         // API Linter path (/lint).
+	RootPath       string         // The base path for the server (default = "/").
+	LanguagesPath  string         // Path for API languages calls.
+	LintPath       string         // Path for API linter calls.
 	SupportedLangs SupportedLangs // Supported Languages.
 	StaticDir      string         // Directory for static files.
 	StaticPath     string         // Path for static files (/static).
@@ -30,10 +31,10 @@ func (x *Frontend) FormHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Frame-Options", "SAMEORIGIN")
 
 	// This is the catch-all URL since Handle("/",...) will drop anything not
-	// caught by other patterns here. If path is not our BasePath ("/" in a
+	// caught by other patterns here. If path is not our RootPath ("/" in a
 	// system that does not use a reverse proxy), then we're dealing with an
 	// unhandled path, so just return 404.
-	if r.URL.Path != x.BasePath {
+	if r.URL.Path != x.RootPath {
 		http.NotFound(w, r)
 		return
 	}
