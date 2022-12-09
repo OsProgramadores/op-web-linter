@@ -87,6 +87,7 @@ func main() {
 	// function will emit a 404 if the path is anything other than "/".
 	http.HandleFunc(fe.RootPath, fe.FormHandler)
 
+	log.Printf("Started op-web-linte, version %s", BuildVersion)
 	log.Printf("Listening on port %d", *port)
 	log.Printf("URL for API requests: %s", *apiurl)
 	log.Printf("Serving static files on path: %s", fe.StaticPath)
