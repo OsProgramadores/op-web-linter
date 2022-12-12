@@ -13,6 +13,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/osprogramadores/op-web-linter/common"
 	"github.com/osprogramadores/op-web-linter/handlers"
 	"github.com/osprogramadores/op-web-linter/lang"
 )
@@ -22,6 +23,7 @@ const (
 	staticURLPath    = "/static"
 	lintURLPath      = "/lint"
 	languagesURLPath = "/languages"
+	pingURLPath      = "/ping"
 )
 
 // BuildVersion Holds the current git HEAD version number.
@@ -86,6 +88,17 @@ func main() {
 	// for anything not matched in the more specific handlers above. The
 	// function will emit a 404 if the path is anything other than "/".
 	http.HandleFunc(fe.RootPath, fe.FormHandler)
+
+	// This is a simple /ping handler that just returns "pong" and does not
+	// log anything. Useful for health probers.
+	http.HandleFunc(u.Path+pingURLPath+"/", func(w http.ResponseWriter, r *http.Request) {
+		// Only GET requests.
+		if r.Method != "GET" {
+			common.HTTPError(w, "Only POST requested accepted", http.StatusMethodNotAllowed)
+			return
+		}
+		fmt.Fprintln(w, "pong")
+	})
 
 	log.Printf("Started op-web-linter, version %s", BuildVersion)
 	log.Printf("Listening on port %d", *port)
