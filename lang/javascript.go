@@ -30,7 +30,7 @@ func LintJavascript(w http.ResponseWriter, r *http.Request, req handlers.LintReq
 	defer os.RemoveAll(tempdir)
 
 	// eslint.
-	o, err := Execute("npx", "eslint", "-c", "/tmp/build/src/op-web-linter/config/eslintrc.yaml", tempfile)
+	o, err := Execute("npx", "eslint", "-c", "/tmp/build/src/op-web-linter/config/eslintrc.json", tempfile)
 	out := strings.Split(o, "\n")
 
 	// Create response, convert to JSON and return.
