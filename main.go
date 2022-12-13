@@ -20,10 +20,12 @@ import (
 
 // API paths.
 const (
-	staticURLPath    = "/static"
 	lintURLPath      = "/lint"
 	languagesURLPath = "/languages"
 	pingURLPath      = "/ping"
+	staticURLPath    = "/static"
+	tmplURLPath      = "/t"
+	formTmplFile     = "form.html"
 )
 
 // BuildVersion Holds the current git HEAD version number.
@@ -48,6 +50,7 @@ func main() {
 		port      = flag.Int("port", 10000, "Specify the TCP port to listen to")
 		apiurl    = flag.String("url", "http://localhost:{port}", "Base URL for API requests (no slash at the end)")
 		staticdir = flag.String("staticdir", "./static", "Directory where we serve static files")
+		tmpldir   = flag.String("templates", "./t", "Directory where we serve templates")
 	)
 	flag.Parse()
 
@@ -58,6 +61,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error parsing URL: %v", err)
 	}
+
+	log.Printf("Started op-web-linter, version %s", BuildVersion)
+	log.Printf("Listening on port %d", *port)
+	log.Printf("URL for API requests: %s", *apiurl)
+
 	// All information required to serve the form. All paths end in slash.
 	fe := &handlers.Frontend{
 		RootPath:       u.Path + "/",
@@ -79,15 +87,15 @@ func main() {
 		handlers.LintRequestHandler(w, r, supported)
 	})
 
+	// Pre-parse templates and register handlers.
+	if err := handlers.TmplSetup(*tmpldir, u.Path+tmplURLPath+"/", fe); err != nil {
+		log.Fatalf("Error setting up template handlers: %v", err)
+	}
+
 	// Everything under staticURLPath is served as a regular file from rootdir.
 	// This allows us to keep local javascript files and other accessory files.
 	fs := http.FileServer(http.Dir(*staticdir))
 	http.Handle(fe.StaticPath, http.StripPrefix(fe.StaticPath, fs))
-
-	// Main HTML form for interactive access. This is also the "catch-all" URL
-	// for anything not matched in the more specific handlers above. The
-	// function will emit a 404 if the path is anything other than "/".
-	http.HandleFunc(fe.RootPath, fe.FormHandler)
 
 	// This is a simple /ping handler that just returns "pong" and does not
 	// log anything. Useful for health probers.
@@ -100,10 +108,21 @@ func main() {
 		fmt.Fprintln(w, "pong")
 	})
 
-	log.Printf("Started op-web-linter, version %s", BuildVersion)
-	log.Printf("Listening on port %d", *port)
-	log.Printf("URL for API requests: %s", *apiurl)
-	log.Printf("Serving static files on path: %s", fe.StaticPath)
+	// Main HTML form for interactive access. This is also the "catch-all" URL
+	// for anything not matched in the more specific handlers above. The
+	// function will emit a 404 if the path is anything other than "/".
+	// If everything is OK, it emits a 302 to the form path (served as a template).
+	http.HandleFunc(fe.RootPath, func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("FORM Request %s %s %s\n", common.RealRemoteAddress(r), r.Method, r.URL)
 
+		if r.URL.Path != fe.RootPath {
+			http.NotFound(w, r)
+			return
+		}
+		u := u.Path + tmplURLPath + "/" + formTmplFile
+		http.Redirect(w, r, u, http.StatusTemporaryRedirect)
+	})
+
+	log.Printf("Serving static files on path: %s", fe.StaticPath)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
 }
