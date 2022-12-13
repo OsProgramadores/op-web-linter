@@ -14,8 +14,8 @@ import (
 	"github.com/osprogramadores/op-web-linter/common"
 )
 
-// Frontend holds the parameters passed to the frontend form.
-type Frontend struct {
+// FormData holds the parameters passed to the
+type FormData struct {
 	RootPath       string         // The base path for the server (default = "/").
 	LanguagesPath  string         // Path for API languages calls.
 	LintPath       string         // Path for API linter calls.
@@ -27,7 +27,7 @@ type Frontend struct {
 
 // TmplSetup parses all templates under dir and sets up handlers under path for
 // each of the files it finds.
-func TmplSetup(dir, path string, tmpldata *Frontend) error {
+func TmplSetup(dir, path string, tmpldata *FormData) error {
 	log.Printf("Setting up templates from: %s", dir)
 
 	files, err := os.ReadDir(dir)
