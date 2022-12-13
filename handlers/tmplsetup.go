@@ -72,6 +72,7 @@ func TmplSetup(dir, path string, tmpldata *FormData) error {
 			// Create handlers for each file.
 			http.HandleFunc(urlpath, func(w http.ResponseWriter, r *http.Request) {
 				log.Printf("Serving text template %s", urlpath)
+				w.Header().Set("Content-Type", "application/javascript")
 				if err := tmpl.Execute(w, tmpldata); err != nil {
 					log.Printf("Error serving text template: %v", err)
 					common.HTTPError(w, err.Error(), http.StatusInternalServerError)
