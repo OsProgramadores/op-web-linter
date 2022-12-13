@@ -60,6 +60,10 @@ func JavascriptFilterOutput(list []string, tempfile string) []string {
 		if strings.TrimSpace(v) == "" {
 			continue
 		}
+		// Remove lines recommending the --fix option.
+		if strings.Contains(v, "fixable with the `--fix` option") {
+			continue
+		}
 		// Parse line:column message error lines.
 		r := eslintLineRegex.FindStringSubmatch(v)
 
