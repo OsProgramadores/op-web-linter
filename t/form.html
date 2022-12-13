@@ -8,6 +8,12 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+  <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
+  <script src="{{.TmplPath}}/form.js"></script>
+
+  <script>
+    window.onload = formOnload;
+  </script>
 
   <style type="text/css" media="screen">
     /* Ace */
@@ -120,152 +126,6 @@
     </div>
   </div>
 
-  <script src="//ajaxorg.github.io/ace-builds/src-min-noconflict/ace.js" type="text/javascript" charset="utf-8"></script>
-  <script>
-    var editor = ace.edit("editor");
-    editor.getSession().setUseWorker(false);
-    editor.setTheme("ace/theme/cloud9_day");
-    editor.setOptions({
-      printMargin: false
-    });
-
-    // Settings form elements.
-    const settingsInvisibleChars = document.getElementById("flexSwitchInvisibleChars");
-    settingsInvisibleChars.onclick = () => {
-      editor.setOption('showInvisibles', settingsInvisibleChars.checked);
-      setCookie("flexSwitchInvisibleChars", settingsInvisibleChars.checked, 360);
-    }
-
-    const settingsDarkEditor = document.getElementById("flexSwitchDarkEditor");
-    settingsDarkEditor.onclick = () => {
-      if (settingsDarkEditor.checked) {
-        editor.setTheme("ace/theme/monokai");
-      } else {
-        editor.setTheme("ace/theme/cloud9_day");
-      }
-      setCookie("flexSwitchDarkEditor", settingsDarkEditor.checked, 360);
-    }
-
-    // Load settings from cookies (if present) and set initial mode based on
-    // the state of the settings form.
-    settingsInvisibleChars.checked = (
-      hasCookie("flexSwitchInvisibleChars") &&
-      getCookie("flexSwitchInvisibleChars") == "true");
-    settingsInvisibleChars.onclick();
-
-    settingsDarkEditor.checked = (
-      hasCookie("flexSwitchDarkEditor") &&
-      getCookie("flexSwitchDarkEditor") == "true");
-    settingsDarkEditor.onclick();
-
-    // Set editor language based on language selected in form.
-    const languageSet = document.getElementById("languageSelect");
-    languageSet.onclick = () => {
-      SetACELang(languageSet)
-    }
-    // Set initial value for the language.
-    languageSet.onclick();
-
-    // SetACELang sets the language used by the ACE editor.
-    function SetACELang(langobj) {
-      // Ugly hack: ACE considers C and C++ a single language: c_cpp
-      let chosenLang = langobj.options[langobj.selectedIndex].value;
-      if (chosenLang == "c" || chosenLang == "cpp") {
-        chosenLang = "c_cpp"
-      }
-      editor.getSession().setMode("ace/mode/" + chosenLang);
-    }
-
-    // Spinner
-    const spinner = document.getElementById("pleasewait");
-
-    // Checks the existence of a given cookie.
-    function hasCookie(cname) {
-      let name = cname + "=";
-      let ca = document.cookie.split(';');
-      for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) == ' ') {
-          c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-          return true
-        }
-      }
-      return false;
-    }
-
-    // Retrieve the value of a cookie.
-    function getCookie(cname) {
-      let name = cname + "=";
-      let ca = document.cookie.split(';');
-      for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) == ' ') {
-          c = c.substring(1);
-        }
-        if (c.indexOf(name) == 0) {
-          return c.substring(name.length, c.length);
-        }
-      }
-      return "";
-    }
-
-    // Set a cookie with a givcen value and expiration (in days).
-    function setCookie(cname, cvalue, exdays) {
-      const d = new Date();
-      d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-      let expires = "expires="+d.toUTCString();
-      document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-    }
-
-    function lint() {
-      spinner.style.visibility = "visible";
-
-      var xhttp = new XMLHttpRequest();
-      xhttp.open("POST", "{{.LintPath}}", true);
-
-      xhttp.onreadystatechange = function() {
-        // Spinner off
-        spinner.style.visibility = "hidden";
-
-        if (this.readyState == 4) {
-          if (this.status == 200) {
-            var res = JSON.parse(this.responseText);
-            // Update editor text if code reformatted.
-            if (res.Reformatted == true) {
-              editor.setValue(res.ReformattedText)
-            }
-
-            if (res.Pass == true) {
-              eid = "results_ok";
-              msg = "No errors found!";
-            } else {
-              eid = "results_bad";
-              msg = res.ErrorMessages.join("<br>");
-            }
-          }
-          else {
-            eid = "results_bad";
-            msg = "Request failed: " + this.responseText;
-          }
-
-          document.getElementById("results_ok_div").style.display = "none";
-          document.getElementById("results_bad_div").style.display = "none";
-          document.getElementById(eid+"_div").style.display = "block";
-          document.getElementById(eid).innerHTML = msg;
-        }
-      };
-
-      // Send
-      let programText = encodeURIComponent(editor.getValue());
-      let lang = document.getElementById("languageSelect");
-      let req = JSON.stringify({"lang": lang.value, "text": programText});
-
-      xhttp.setRequestHeader("Content-type", "application/json");
-      xhttp.send(req)
-    }
-  </script>
 </body>
 </html>
 <!-- vim: ft=html:ts=2:sw=2:expandtab:smarttab

@@ -67,10 +67,10 @@ func main() {
 		LintPath:       u.Path + lintURLPath + "/",
 		StaticPath:     u.Path + staticURLPath + "/",
 		LanguagesPath:  u.Path + languagesURLPath + "/",
+		TmplPath:       u.Path + tmplURLPath + "/",
 		StaticDir:      *staticdir,
 		SupportedLangs: supported,
 	}
-	tmplPath := u.Path + tmplURLPath + "/"
 
 	// Send list of languages back to caller.
 	http.HandleFunc(formdata.LanguagesPath, func(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +83,7 @@ func main() {
 	})
 
 	// Pre-parse templates and register handlers.
-	if err := handlers.TmplSetup(*tmpldir, tmplPath, formdata); err != nil {
+	if err := handlers.TmplSetup(*tmpldir, formdata.TmplPath, formdata); err != nil {
 		log.Fatalf("Error setting up template handlers: %v", err)
 	}
 
@@ -114,7 +114,7 @@ func main() {
 			http.NotFound(w, r)
 			return
 		}
-		u := tmplPath + formTmplFile
+		u := formdata.TmplPath + formTmplFile
 		http.Redirect(w, r, u, http.StatusTemporaryRedirect)
 	})
 

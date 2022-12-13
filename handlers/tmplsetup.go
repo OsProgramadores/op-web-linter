@@ -5,11 +5,14 @@
 package handlers
 
 import (
-	"html/template"
+	htemplate "html/template"
+	ttemplate "text/template"
+
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/osprogramadores/op-web-linter/common"
 )
@@ -22,7 +25,7 @@ type FormData struct {
 	SupportedLangs SupportedLangs // Supported Languages.
 	StaticDir      string         // Directory for static files.
 	StaticPath     string         // Path for static files (/static).
-	Template       *template.Template
+	TmplPath       string         // Path for template files.
 }
 
 // TmplSetup parses all templates under dir and sets up handlers under path for
@@ -44,21 +47,39 @@ func TmplSetup(dir, path string, tmpldata *FormData) error {
 			continue
 		}
 
-		tmpl, err := template.ParseFiles(fpath)
-		if err != nil {
-			return err
+		urlpath := path + fname
+
+		// Use html if this is an html file.
+		if strings.HasSuffix(fname, "html") || strings.HasSuffix(fname, "htm") {
+			tmpl, err := htemplate.ParseFiles(fpath)
+			if err != nil {
+				return err
+			}
+			// Create handlers for each file.
+			http.HandleFunc(urlpath, func(w http.ResponseWriter, r *http.Request) {
+				log.Printf("Serving HTML template %s", urlpath)
+				if err := tmpl.Execute(w, tmpldata); err != nil {
+					log.Printf("Error serving HTML template: %v", err)
+					common.HTTPError(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			})
+		} else {
+			tmpl, err := ttemplate.ParseFiles(fpath)
+			if err != nil {
+				return err
+			}
+			// Create handlers for each file.
+			http.HandleFunc(urlpath, func(w http.ResponseWriter, r *http.Request) {
+				log.Printf("Serving text template %s", urlpath)
+				if err := tmpl.Execute(w, tmpldata); err != nil {
+					log.Printf("Error serving text template: %v", err)
+					common.HTTPError(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			})
 		}
 
-		// Create handlers for each file.
-		urlpath := path + fname
-		http.HandleFunc(urlpath, func(w http.ResponseWriter, r *http.Request) {
-			log.Printf("Serving template %s", urlpath)
-			if err := tmpl.Execute(w, tmpldata); err != nil {
-				log.Printf("Error serving template: %v", err)
-				common.HTTPError(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		})
 		log.Printf("Registered template handler at: %s", urlpath)
 	}
 	return nil
