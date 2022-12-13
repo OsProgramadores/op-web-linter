@@ -1,6 +1,9 @@
 // This file is part of op-web-linter.
 // See github.com/osprogramadores/op-web-linter for licensing and details.
 
+/* eslint no-unused-vars: "off" */
+/* global ace */
+
 // ACE editor
 let editor;
 
