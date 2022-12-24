@@ -31,7 +31,8 @@ func LintPython(w http.ResponseWriter, r *http.Request, req handlers.LintRequest
 	defer os.RemoveAll(tempdir)
 
 	// pylint.
-	out, err := Execute("pylint", "--rcfile=/tmp/build/src/op-web-linter/config/pylint3.rc", tempfile)
+	homedir := os.Getenv("HOME")
+	out, err := Execute("pylint", "--rcfile="+homedir+"/op-web-linter/config/pylint3.rc", tempfile)
 
 	// Create response, convert to JSON and return.
 	resp := handlers.LintResponse{

@@ -29,9 +29,11 @@ func LintJavascript(w http.ResponseWriter, r *http.Request, req handlers.LintReq
 	}
 	defer os.RemoveAll(tempdir)
 
+	homedir := os.Getenv("HOME")
+
 	// eslint.
 	// --max-warnings 0 makes eslint a return code for any warnings.
-	o, err := Execute("npx", "eslint", "--max-warnings", "0", "-c", "/tmp/build/src/op-web-linter/config/eslintrc.json", tempfile)
+	o, err := Execute("npx", "eslint", "--max-warnings", "0", "-c", homedir+"/op-web-linter/config/eslintrc.json", tempfile)
 	out := strings.Split(o, "\n")
 
 	// Create response, convert to JSON and return.
