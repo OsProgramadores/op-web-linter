@@ -135,6 +135,9 @@ disable=print-statement,
         exception-escape,
         comprehension-escape,
         import-error,
+        missing-module-docstring,
+        missing-class-docstring,
+        missing-function-docstring,
         invalid-name
 
 # Enable the message, report, category or checker with the given id(s). You can
