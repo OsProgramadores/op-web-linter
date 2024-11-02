@@ -45,7 +45,7 @@ RUN apk add --no-cache ca-certificates clang15 clang15-extra-tools curl git git-
     go install golang.org/x/lint/golint@latest && \
     cp "${gopath}/bin/golint" /usr/local/bin && \
     npm install --save-dev eslint-config-standard-with-typescript@23.0.0 eslint@8.24.0 && \
-    curl -LJO "https://github.com/google/google-java-format/releases/download/v1.15.0/google-java-format-1.15.0-all-deps.jar"
+    curl -LJO "https://github.com/google/google-java-format/releases/download/v1.24.0/google-java-format-1.24.0-all-deps.jar"
 
 # Copy repo contents, compile and install.
 WORKDIR ${src_dir}
