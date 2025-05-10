@@ -66,7 +66,7 @@ func PythonFilterOutput(output string, tempfile string) []string {
 		r := pylintLineRegex.FindStringSubmatch(v)
 
 		// Unable to parse line, Include literally (this should not happen).
-		if r == nil || len(r) < 4 {
+		if len(r) < 4 {
 			ret = append(ret, v)
 			continue
 		}

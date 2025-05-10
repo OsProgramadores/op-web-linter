@@ -126,7 +126,7 @@ func goFilterOutput(list []string) []string {
 		r := goLineRegex.FindStringSubmatch(v)
 
 		// Unable to parse line. Include literally.
-		if r == nil || len(r) < 5 {
+		if len(r) < 5 {
 			ret = append(ret, v)
 			continue
 		}
