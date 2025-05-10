@@ -13,7 +13,7 @@ linters:
   disable:
     # errcheck gives a lot of false positives. There's a lot of info on how
     # to turn only those off, but most of them don't work.
-    errcheck
+    - errcheck
 formatters:
   enable:
     - gofmt
