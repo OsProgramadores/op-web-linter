@@ -71,7 +71,7 @@ func JavascriptFilterOutput(list []string, tempfile string) []string {
 		r := eslintLineRegex.FindStringSubmatch(v)
 
 		// Unable to parse line. Include literally.
-		if r == nil || len(r) < 4 {
+		if len(r) < 4 {
 			ret = append(ret, v)
 			continue
 		}
