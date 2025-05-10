@@ -1,0 +1,25 @@
+version: "2"
+linters:
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+  disable:
+    # errcheck gives a lot of false positives. There's a lot of info on how
+    # to turn only those off, but most of them don't work.
+    errcheck
+formatters:
+  enable:
+    - gofmt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
