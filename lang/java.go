@@ -28,7 +28,7 @@ func LintJava(w http.ResponseWriter, r *http.Request, req handlers.LintRequest) 
 	var messages []string
 
 	// Reformat source code with google-java-format.
-	reformatted, err := Execute("/usr/lib/jvm/java-17-openjdk/bin/java", "-jar", "google-java-format-1.15.0-all-deps.jar", tempfile)
+	reformatted, err := Execute("/usr/lib/jvm/java-17-openjdk/bin/java", "-jar", "/home/op/google-java-format-1.24.0-all-deps.jar", tempfile)
 	if err != nil {
 		messages = append(messages, fmt.Sprintf("Reformat failed: %v", err))
 	}
